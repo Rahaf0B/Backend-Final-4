@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const products_1 = __importDefault(require("./products"));
+const router = express_1.default.Router();
+router.get("/test", products_1.default.test);
+router.get("/products", products_1.default.getAllProducts);
+router.get("/products/popular", products_1.default.getMostPopulurProducts);
+router.get("/product", products_1.default.getProductsByCategory);
+router.get("/product/new-arrival", products_1.default.getNewArrivalProducts);
+router.get("/product/handpicked", products_1.default.getHandpickedProducts);
+router.get("/product/handpicked-categories/:number_of_categories", products_1.default.getHandpickedCategories);
+router.get("/product/category/handpicked", products_1.default.getHandpickedProductsByCategoryName);
+router.get("/product/limited-edition", products_1.default.getLimitedEditionProducts);
+router.get("/product/discount-edition", products_1.default.getDiscountedProducts);
+router.get("/product/search", products_1.default.getProductsByTextSearch);
+router.get("/product/:product_id", products_1.default.getProductsById);
+router.get("/product/related/:brand_id/:category_id", products_1.default.get5RelatedProducts);
+router.get("/product/reatings/:product_id", products_1.default.getProductsRatings);
+module.exports = router;
