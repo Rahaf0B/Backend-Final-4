@@ -1,0 +1,50 @@
+{
+  "name": "week7",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf dist && npx tsc",
+    "prestart": "npm run build",
+    "start": "tsx watch index",
+    "dev": " concurrently \"npx tsc -w\" \"tsx watch index\"  ",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.6",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "@types/nodemailer": "^6.4.14",
+    "@types/uuid": "^9.0.7",
+    "@types/validator": "^13.11.7",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/sequelize": "^4.28.19",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "crypto": "^1.0.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "moment": "^2.30.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.6.5",
+    "node-cache": "^5.1.2",
+    "nodemailer": "^6.9.8",
+    "reflect-metadata": "^0.2.1",
+    "rimraf": "^5.0.5",
+    "sequelize": "^6.35.2",
+    "sequelize-typescript": "^2.1.6",
+    "uuid": "^9.0.1",
+    "uuidv4": "^6.2.13",
+    "yup": "^1.3.3"
+  }
+}
