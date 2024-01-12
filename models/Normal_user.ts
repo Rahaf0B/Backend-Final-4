@@ -49,17 +49,17 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   @Column({
     type: DataType.INTEGER,
   })
-  declare age: number;
+  declare age?: number;
 
   @Column({
     type: DataType.INTEGER,
   })
-  declare phone_number: number;
+  declare phone_number?: number;
 
   @HasOne(() => Image, {
     foreignKey: "image_id",
   })
-  declare image_id: Image;
+  declare image_id?: Image;
 
   @HasMany(() => Rating, {
     foreignKey: "normal_uid",

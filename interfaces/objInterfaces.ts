@@ -14,9 +14,9 @@ export interface IAdmin {
 export interface INormal_user {
   normal_uid: string | number;
   DOB?: Date | string;
-  age: number;
-  phone_number: number;
-  image_id: IImage;
+  age?: number;
+  phone_number?: number;
+  image_id?: IImage;
 }
 
 export interface IImage {
