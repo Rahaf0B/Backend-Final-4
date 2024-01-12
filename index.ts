@@ -1,11 +1,9 @@
 import express from "express";
 import {Sequelize} from 'sequelize';
-
+import './conections/sequelizeConnection'
 const app = express();
 
 
-
-app.use("/",);
 
 app.use(async (req, res, next)=>{ 
   res.status(404).send({message:"Not Found"});
