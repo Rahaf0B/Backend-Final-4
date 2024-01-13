@@ -25,6 +25,8 @@ import Category from "./Category";
 import moment from "moment";
 import Wishlist from "./Wishlist";
 import Product_wishlist from "./product_wishlist";
+import Cart from "./Cart";
+import Product_cart from "./Product_cart";
 
 @Table({
   timestamps: false,
@@ -113,6 +115,9 @@ class Product extends Model<IProduct> implements IProduct {
 
   @BelongsToMany(() => Discount, () => Product_discount)
   declare discount?: Discount[];
+
+  @BelongsToMany(() => Cart, () => Product_cart)
+  declare cart?: Cart[];
 
   @BeforeCreate
   static setCreatedDate(instance: Product) {

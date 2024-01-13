@@ -19,6 +19,7 @@ import Rating from "./Rating";
 import Wishlist from "./Wishlist";
 import Order from "./Order";
 import Order_item from "./Order_item";
+import Cart from "./Cart";
 
 @Table({
   timestamps: false,
@@ -70,6 +71,11 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
     foreignKey: "normal_uid",
   })
   declare wishlist?: Wishlist[];
+
+  @HasMany(() => Cart, {
+    foreignKey: "normal_uid",
+  })
+  declare cart?: Cart[];
 
   @HasMany(() => Order, {
     foreignKey: "normal_uid",

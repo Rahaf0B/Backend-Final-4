@@ -19,26 +19,26 @@ class Product_wishlist extends Model {
   @Column({
     type: DataType.INTEGER,
   })
-  product_id: number;
+  declare product_id: number;
 
   @ForeignKey(() => Wishlist)
   @Column({
     type: DataType.INTEGER,
   })
-  wishlist_id: number;
+  declare wishlist_id: number;
 
   @BelongsTo(() => Product, {
     foreignKey: "product_id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  product: Product;
+  declare product: Product;
 
   @BelongsTo(() => Wishlist, {
     foreignKey: "wishlist_id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  wishlist: Wishlist;
+  declare wishlist: Wishlist;
 }
 export default Product_wishlist;

@@ -16,6 +16,7 @@ import Normal_User from "./Normal_user";
 import Brand from "./Brand";
 import Category from "./Category";
 import Product from "./Product";
+import Order_item from "./Order_item";
 
 @Table({
   timestamps: false,
@@ -101,6 +102,12 @@ class Image extends Model<IImage> implements IImage {
     onUpdate: "CASCADE",
   })
   product: Product;
+
+  @BelongsTo(() => Order_item, {
+    foreignKey: "order_item_id",
+  })
+  declare order_item: Order_item;
+
 }
 
 export default Image;

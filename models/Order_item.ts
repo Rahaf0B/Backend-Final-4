@@ -9,11 +9,14 @@ import {
   ForeignKey,
   AllowNull,
   BelongsTo,
+  HasOne,
 } from "sequelize-typescript";
 import { IOrder_item } from "../interfaces/objInterfaces";
 import Order from "./Order";
 import Product from "./Product";
 import Normal_User from "./Normal_user";
+import Image from "./Image";
+
 
 @Table({
   timestamps: false,
@@ -36,12 +39,12 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   })
   declare product_id: number;
   @BelongsTo(() => Product, {
-    as:"product_item",
+    as: "product_item",
     foreignKey: "product_id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  product: Product;
+  declare product: Product;
 
   @AllowNull(false)
   @Column({
@@ -57,16 +60,31 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   declare normal_uid: string;
   @BelongsTo(() => Normal_User, {
     foreignKey: "normal_uid",
-    as:"user",
+    as: "user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare item_name: string;
 
+  @HasOne(() => Image, {
+    foreignKey: "image_id",
+  })
+  declare image_id: Image;
+  
   @AllowNull(false)
   @Column({
     type: DataType.DOUBLE,
   })
   declare item_price: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  declare item_sub_title?: string;
 
   @AllowNull(false)
   @ForeignKey(() => Order)
@@ -76,12 +94,12 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   declare order_id: number;
 
   @BelongsTo(() => Order, {
-    as:"order_info",
+    as: "order_info",
     foreignKey: "order_id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  order: Order;
+  declare order: Order;
 }
 
 export default Order_item;

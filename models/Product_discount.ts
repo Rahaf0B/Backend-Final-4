@@ -18,12 +18,12 @@ class Product_discount extends Model {
   @Column({
     type: DataType.INTEGER,
   })
-  product_id: number;
+  declare product_id: number;
 
   @ForeignKey(() => Discount)
   @Column({
     type: DataType.INTEGER,
   })
-  discount_id: number;
+  declare discount_id: number;
 }
 export default Product_discount;

@@ -115,5 +115,11 @@ export interface IOrder_item {
 export interface IWishlist {
   wishlist_id?: number;
   normal_uid: string;
-  // product_id: number;
+}
+
+
+export interface ICart{
+  cart_id?: number;
+  normal_uid: string;
+  quantity: number;
 }
