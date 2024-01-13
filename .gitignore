@@ -20,3 +20,6 @@ dist/models/Rating.js
 dist/models/User.js
 dist/models/Wishlist.js
 dist/routes/user.js
+dist/classes/user.js
+dist/middleware/authorization.js
+dist/middleware/validationRequest.js

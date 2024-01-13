@@ -10,6 +10,7 @@ import {
   Length,
   IsEmail,
   HasOne,
+  AfterCreate,
 } from "sequelize-typescript";
 import { IUser } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
@@ -66,6 +67,21 @@ class User extends Model<IUser> implements IUser {
     foreignKey: "normal_uid",
   })
   admin: Admin;
+
+
+  @AfterCreate
+  static async createUser(instance: User){
+try{
+  console.log("Creating");
+  if(instance.type === "normal_user"){
+    const userCreated = await Normal_User.create({"normal_uid":instance.uid});
+  }
+}catch(e:any){
+
+  throw new Error(e.message);
+}
+
+  }
 }
 
 export default User;

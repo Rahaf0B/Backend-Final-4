@@ -34,6 +34,7 @@
     "crypto": "^1.0.1",
     "express": "^4.18.2",
     "firebase": "^10.7.1",
+    "firebase-admin": "^12.0.0",
     "fs": "^0.0.1-security",
     "moment": "^2.30.1",
     "mysql": "^2.18.1",
