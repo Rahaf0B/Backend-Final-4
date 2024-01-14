@@ -58,7 +58,7 @@ class Session extends Model {
   @AllowNull(false)
   @ForeignKey(() => User)
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare uid: number;
 

@@ -39,7 +39,7 @@ import {
     @AllowNull(false)
     @ForeignKey(() => Normal_User)
     @Column({
-      type: DataType.STRING,
+      type: DataType.INTEGER,
     })
     declare normal_uid: number;
     

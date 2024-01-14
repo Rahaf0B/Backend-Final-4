@@ -22,7 +22,7 @@ class Admin extends Model<IAdmin> implements IAdmin {
   @AllowNull(false)
   @PrimaryKey
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare admin_uid: number;
   @BelongsTo(() => User, {

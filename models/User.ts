@@ -11,6 +11,7 @@ import {
   IsEmail,
   HasOne,
   HasMany,
+  AutoIncrement,
 } from "sequelize-typescript";
 import { IUser } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
@@ -25,8 +26,9 @@ import Session from "./Session";
 class User extends Model<IUser> implements IUser {
   @AllowNull(false)
   @PrimaryKey
+  @AutoIncrement
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare uid?: number;
 
@@ -54,8 +56,8 @@ class User extends Model<IUser> implements IUser {
 
   @AllowNull(false)
   @Column({
-    type: DataType.STRING,
-    values: ["Admin", "Normal_user"],
+    type: DataType.STRING(100),
+    values: ["admin", "normal_user"],
   })
   declare type?: string;
 
@@ -65,12 +67,12 @@ class User extends Model<IUser> implements IUser {
   declare Session: Session[];
 
   @HasOne(() => Normal_User, {
-    foreignKey: "admin_uid",
+    foreignKey: "normal_uid",
   })
   declare normal_user: Normal_User;
 
   @HasOne(() => Admin, {
-    foreignKey: "normal_uid",
+    foreignKey: "admin_uid",
   })
   declare admin: Admin;
 }

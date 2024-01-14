@@ -33,7 +33,7 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   @AllowNull(false)
   @PrimaryKey
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare normal_uid: number;
   @BelongsTo(() => User, {

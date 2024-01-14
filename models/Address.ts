@@ -68,7 +68,7 @@ class Address extends Model<IAddress> implements IAddress {
   @AllowNull(false)
   @ForeignKey(() => Normal_User)
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare normal_uid: number;
   @BelongsTo(() => Normal_User, {

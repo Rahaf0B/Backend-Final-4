@@ -17,7 +17,6 @@ import Product from "./Product";
 import Normal_User from "./Normal_user";
 import Image from "./Image";
 
-
 @Table({
   timestamps: false,
   tableName: "order_item",
@@ -55,7 +54,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   @AllowNull(false)
   @ForeignKey(() => Normal_User)
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare normal_uid: number;
   @BelongsTo(() => Normal_User, {
@@ -74,7 +73,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
     foreignKey: "image_id",
   })
   declare image_id: Image;
-  
+
   @AllowNull(false)
   @Column({
     type: DataType.DOUBLE,

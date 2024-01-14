@@ -53,7 +53,7 @@ class Image extends Model<IImage> implements IImage {
 
   @ForeignKey(() => Normal_User)
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
   })
   declare normal_uid?: number;
 
