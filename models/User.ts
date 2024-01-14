@@ -10,10 +10,12 @@ import {
   Length,
   IsEmail,
   HasOne,
+  HasMany,
 } from "sequelize-typescript";
 import { IUser } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
 import Admin from "./Admin";
+import Session from "./Session";
 
 @Table({
   timestamps: false,
@@ -57,15 +59,22 @@ class User extends Model<IUser> implements IUser {
   })
   declare type?: string;
 
+  
+  @HasMany(() => Session, {
+    foreignKey: "uid",
+    })
+  declare Session: Session[];
+
+  
   @HasOne(() => Normal_User, {
     foreignKey: "admin_uid",
   })
-  normal_user: Normal_User;
+  declare normal_user: Normal_User;
 
   @HasOne(() => Admin, {
     foreignKey: "normal_uid",
   })
-  admin: Admin;
+  declare admin: Admin;
 }
 
 export default User;

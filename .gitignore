@@ -25,3 +25,4 @@ dist/middleware/authorization.js
 dist/middleware/validationRequest.js
 dist/models/Cart.js
 dist/models/Product_cart.js
+dist/models/Session.js

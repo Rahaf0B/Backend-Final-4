@@ -13,8 +13,7 @@ export interface IAdmin {
 
 export interface INormal_user {
   normal_uid: string | number;
-  DOB?: Date | string;
-  age?: number;
+  date_of_birth?: Date | string;
   phone_number?: number;
   image_id?: IImage;
 }

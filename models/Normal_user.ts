@@ -10,6 +10,7 @@ import {
   AllowNull,
   BelongsTo,
   HasOne,
+  BeforeCreate,
 } from "sequelize-typescript";
 import { INormal_user } from "../interfaces/objInterfaces";
 import moment from "moment";
@@ -43,14 +44,12 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   @Column({
     type: DataType.DATEONLY,
   })
-  get DOB(): string {
-    return moment(this.getDataValue("DOB"), "YYYY-MM-DD").format("YYYY-MM-DD");
+  get date_of_birth(): string {
+    return moment(this.getDataValue("date_of_birth"), "YYYY-MM-DD").format("YYYY-MM-DD");
   }
-
-  @Column({
-    type: DataType.INTEGER,
-  })
-  declare age?: number;
+set date_of_birth(value:string){
+this.setDataValue("date_of_birth",value);
+}
 
   @Column({
     type: DataType.INTEGER,
@@ -65,7 +64,7 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   @HasMany(() => Rating, {
     foreignKey: "normal_uid",
   })
-  declare rating: Rating[];
+  declare rating?: Rating[];
 
   @HasMany(() => Wishlist, {
     foreignKey: "normal_uid",
@@ -87,6 +86,7 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   })
   declare order_items?: Order_item[];
 
+  
 }
 
 export default Normal_User;
