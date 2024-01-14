@@ -24,7 +24,7 @@ class Admin extends Model<IAdmin> implements IAdmin {
   @Column({
     type: DataType.STRING,
   })
-  declare admin_uid: string;
+  declare admin_uid: number;
   @BelongsTo(() => User, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",

@@ -35,7 +35,7 @@ class Order extends Model<IOrder> implements IOrder {
   @Column({
     type: DataType.STRING,
   })
-  declare normal_uid: string;
+  declare normal_uid: number;
   @BelongsTo(() => Normal_User, {
     foreignKey: "normal_uid",
     onDelete: "CASCADE",

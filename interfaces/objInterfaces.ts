@@ -1,5 +1,5 @@
 export interface IUser {
-  uid?: string;
+  uid?: number;
   first_name: string;
   last_name: string;
   email: string;
@@ -8,11 +8,11 @@ export interface IUser {
 }
 
 export interface IAdmin {
-  admin_uid: string | number;
+  admin_uid:  number;
 }
 
 export interface INormal_user {
-  normal_uid: string | number;
+  normal_uid: number;
   date_of_birth?: Date | string;
   phone_number?: number;
   image_id?: IImage;
@@ -23,7 +23,7 @@ export interface IImage {
   name: string;
   url: string;
   type?: boolean;
-  normal_uid?:string;
+  normal_uid?:number;
   brand_id?: number;
   category_id?: number;
   product_id?:number;
@@ -59,7 +59,7 @@ export interface IDiscount {
 
 export interface IRating {
   rating_id?: number;
-  user_id: string;
+  normal_uid: number;
   values: number;
   product_id: number;
 }
@@ -93,7 +93,7 @@ export interface IProduct {
 
 export interface IOrder {
   order_id?: number;
-  normal_uid: string;
+  normal_uid: number;
   total_price: number;
   status: number;
   payment_status: boolean;
@@ -104,7 +104,7 @@ export interface IOrder {
 
 export interface IOrder_item {
   order_item_id?: number;
-  normal_uid: string;
+  normal_uid: number;
   product_id: number;
   quantity: number;
   item_price: number;
@@ -113,12 +113,12 @@ export interface IOrder_item {
 
 export interface IWishlist {
   wishlist_id?: number;
-  normal_uid: string;
+  normal_uid: number;
 }
 
 
 export interface ICart{
   cart_id?: number;
-  normal_uid: string;
+  normal_uid: number;
   quantity: number;
 }

@@ -28,7 +28,7 @@ class User extends Model<IUser> implements IUser {
   @Column({
     type: DataType.STRING,
   })
-  declare uid?: string;
+  declare uid?: number;
 
   @AllowNull(false)
   @Length({ min: 3, max: 10 })
@@ -59,13 +59,11 @@ class User extends Model<IUser> implements IUser {
   })
   declare type?: string;
 
-  
   @HasMany(() => Session, {
     foreignKey: "uid",
-    })
+  })
   declare Session: Session[];
 
-  
   @HasOne(() => Normal_User, {
     foreignKey: "admin_uid",
   })

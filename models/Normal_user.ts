@@ -21,6 +21,7 @@ import Wishlist from "./Wishlist";
 import Order from "./Order";
 import Order_item from "./Order_item";
 import Cart from "./Cart";
+import Address from "./Address";
 
 @Table({
   timestamps: false,
@@ -34,7 +35,7 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   @Column({
     type: DataType.STRING,
   })
-  declare normal_uid: string;
+  declare normal_uid: number;
   @BelongsTo(() => User, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
@@ -86,7 +87,10 @@ this.setDataValue("date_of_birth",value);
   })
   declare order_items?: Order_item[];
 
-  
+  @HasMany(() => Address, {
+    foreignKey: "normal_uid",
+  })
+  declare address?: Address[];
 }
 
 export default Normal_User;

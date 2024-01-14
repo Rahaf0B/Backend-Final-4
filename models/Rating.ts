@@ -33,10 +33,10 @@ class Rating extends Model<IRating> implements IRating {
   @Column({
     type: DataType.STRING,
   })
-  declare user_id: string;
+  declare normal_uid: number;
 
   @BelongsTo(() => Normal_User, {
-    foreignKey: "user_id",
+    foreignKey: "normal_uid",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })

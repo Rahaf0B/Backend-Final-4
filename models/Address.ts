@@ -11,9 +11,12 @@ import {
   Unique,
   IsEmail,
   Length,
+  BelongsTo,
+  ForeignKey,
 } from "sequelize-typescript";
 import { IAddress } from "../interfaces/objInterfaces";
 import Order from "./Order";
+import Normal_User from "./Normal_user";
 
 @Table({
   timestamps: false,
@@ -61,6 +64,19 @@ class Address extends Model<IAddress> implements IAddress {
     type: DataType.INTEGER,
   })
   declare phone_number: number;
+
+  @AllowNull(false)
+  @ForeignKey(() => Normal_User)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare normal_uid: number;
+  @BelongsTo(() => Normal_User, {
+    foreignKey: "normal_uid",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  })
+  user: Normal_User;
 
   @HasMany(() => Order, { foreignKey: "address_id" })
   declare orders?: Order[];

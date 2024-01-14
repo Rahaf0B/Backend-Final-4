@@ -57,7 +57,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   @Column({
     type: DataType.STRING,
   })
-  declare normal_uid: string;
+  declare normal_uid: number;
   @BelongsTo(() => Normal_User, {
     foreignKey: "normal_uid",
     as: "user",
