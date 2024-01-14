@@ -53,7 +53,7 @@ this.setDataValue("date_of_birth",value);
 }
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.BIGINT,
   })
   declare phone_number?: number;
 
