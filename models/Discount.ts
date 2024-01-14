@@ -34,7 +34,7 @@ class Discount extends Model<IDiscount> implements IDiscount {
   @Column({
     type: DataType.DOUBLE,
   })
-  declare values: number;
+  declare value: number;
 
   @AllowNull(false)
   @Column({

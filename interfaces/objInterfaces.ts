@@ -51,7 +51,7 @@ export interface ICategory {
 
 export interface IDiscount {
   discount_id?: number;
-  values: number;
+  value: number;
   type?: string;
   categories?: object[];
   brands?: object[];
