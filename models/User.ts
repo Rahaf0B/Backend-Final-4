@@ -12,6 +12,8 @@ import {
   HasOne,
   HasMany,
   AutoIncrement,
+  AfterCreate,
+  BeforeCreate,
 } from "sequelize-typescript";
 import { IUser } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
@@ -61,6 +63,12 @@ class User extends Model<IUser> implements IUser {
   })
   declare type?: string;
 
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING(1000),
+  })
+  declare password?: string;
+
   @HasMany(() => Session, {
     foreignKey: "uid",
   })
@@ -75,6 +83,9 @@ class User extends Model<IUser> implements IUser {
     foreignKey: "admin_uid",
   })
   declare admin: Admin;
+
+
+
 }
 
 export default User;
