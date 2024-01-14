@@ -38,7 +38,7 @@ class Category extends Model<ICategory> implements ICategory {
   declare name: string;
 
   @HasOne(() => Image, {
-    foreignKey: "image_id",
+    foreignKey: "category_id",
   })
   declare image?: Image;
 

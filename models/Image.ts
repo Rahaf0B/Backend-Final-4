@@ -62,7 +62,7 @@ class Image extends Model<IImage> implements IImage {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  declare user: Normal_User;
+  declare user?: Normal_User;
 
   @ForeignKey(() => Brand)
   @Column({

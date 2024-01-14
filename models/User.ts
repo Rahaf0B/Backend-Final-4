@@ -76,12 +76,12 @@ class User extends Model<IUser> implements IUser {
   declare Session: Session[];
 
   @HasOne(() => Normal_User, {
-    foreignKey: "normal_uid",
+    foreignKey: "uid",
   })
   declare normal_user: Normal_User;
 
   @HasOne(() => Admin, {
-    foreignKey: "admin_uid",
+    foreignKey: "uid",
   })
   declare admin: Admin;
 

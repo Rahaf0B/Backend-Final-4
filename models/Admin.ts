@@ -25,7 +25,8 @@ class Admin extends Model<IAdmin> implements IAdmin {
     type: DataType.INTEGER,
   })
   declare admin_uid: number;
-  @BelongsTo(() => User, {
+  @BelongsTo(() => User, { 
+    foreignKey: "uid",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })

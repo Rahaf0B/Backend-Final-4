@@ -37,6 +37,7 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
   })
   declare normal_uid: number;
   @BelongsTo(() => User, {
+    foreignKey: "uid",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
@@ -58,7 +59,7 @@ this.setDataValue("date_of_birth",value);
   declare phone_number?: number;
 
   @HasOne(() => Image, {
-    foreignKey: "image_id",
+    foreignKey: "normal_uid",
   })
   declare image_id?: Image;
 

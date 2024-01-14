@@ -70,7 +70,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   declare item_name: string;
 
   @HasOne(() => Image, {
-    foreignKey: "image_id",
+    foreignKey: "order_item_id",
   })
   declare image?: Image;
 
