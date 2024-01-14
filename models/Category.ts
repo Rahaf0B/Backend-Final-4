@@ -40,7 +40,7 @@ class Category extends Model<ICategory> implements ICategory {
   @HasOne(() => Image, {
     foreignKey: "image_id",
   })
-  declare image_id: Image;
+  declare image_id?: Image;
 
   @ForeignKey(() => Discount)
   @Column({
@@ -49,7 +49,7 @@ class Category extends Model<ICategory> implements ICategory {
   declare discount_id?: number;
 
   @BelongsTo(() => Discount, { foreignKey: "discount_id" })
-  discount: Discount;
+  declare discount?: Discount;
 
   @HasMany(() => Product, { foreignKey: "category_id" })
   declare products?: Product[];

@@ -51,7 +51,7 @@ import {
     user: Normal_User;
   
     @BelongsToMany(() => Product, () => Product_cart)
-    product: Product[];
+    declare product: Product[];
   }
   
   export default Cart;

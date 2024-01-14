@@ -41,7 +41,7 @@ class Order extends Model<IOrder> implements IOrder {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  user: Normal_User;
+  declare user: Normal_User;
 
   @AllowNull(false)
   @Column({
@@ -66,19 +66,19 @@ class Order extends Model<IOrder> implements IOrder {
   @Column({
     type: DataType.BOOLEAN,
   })
-  declare payment_type: string;
+  declare payment_type?: string;
 
   @AllowNull(false)
   @ForeignKey(() => Address)
   @Column({
     type: DataType.INTEGER,
   })
-  declare address_id: number;
+  declare address_id?: number;
   @BelongsTo(() => Address, { foreignKey: "address_id" })
-  address: Address;
+  declare address?: Address;
 
   @HasMany(() => Order_item, { foreignKey: "order_id" })
-  declare items: IOrder_item[];
+  declare order_items: IOrder_item[];
 }
 
 export default Order;

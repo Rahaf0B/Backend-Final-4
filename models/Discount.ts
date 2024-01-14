@@ -43,7 +43,7 @@ class Discount extends Model<IDiscount> implements IDiscount {
   declare type?: string;
 
   @BelongsToMany(() => Product, () => Product_discount)
-  product: Product[];
+  declare product?: Product[];
 
   @HasMany(() => Brand, { foreignKey: "discount_id" })
   declare brands?: Brand[];

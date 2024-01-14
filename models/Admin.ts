@@ -29,7 +29,7 @@ class Admin extends Model<IAdmin> implements IAdmin {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  user: User;
+ declare user: User;
 }
 
 export default Admin;

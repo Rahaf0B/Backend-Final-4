@@ -40,7 +40,7 @@ class Rating extends Model<IRating> implements IRating {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  user: Normal_User;
+  declare user: Normal_User;
 
   @Column({
     type: DataType.INTEGER,
@@ -52,12 +52,11 @@ class Rating extends Model<IRating> implements IRating {
   @Column({
     type: DataType.INTEGER,
   })
-
   @AllowNull(false)
   @Column({
     type: DataType.STRING,
   })
-  declare comment: string;
+  declare comment?: string;
 
   declare product_id: number;
   @BelongsTo(() => Product, {
@@ -65,7 +64,7 @@ class Rating extends Model<IRating> implements IRating {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  product: Product;
+  declare product: Product;
 }
 
 export default Rating;

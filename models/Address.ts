@@ -76,7 +76,7 @@ class Address extends Model<IAddress> implements IAddress {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  user: Normal_User;
+  declare user: Normal_User;
 
   @HasMany(() => Order, { foreignKey: "address_id" })
   declare orders?: Order[];

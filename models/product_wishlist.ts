@@ -9,6 +9,7 @@ import {
 import Product from "./Product";
 import Wishlist from "./Wishlist";
 
+
 @Table({
   timestamps: false,
   tableName: "product_wishlist",

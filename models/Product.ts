@@ -28,6 +28,7 @@ import Product_wishlist from "./product_wishlist";
 import Cart from "./Cart";
 import Product_cart from "./Product_cart";
 
+
 @Table({
   timestamps: false,
   tableName: "product",

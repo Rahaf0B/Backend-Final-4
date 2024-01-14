@@ -33,7 +33,7 @@ export interface IImage {
 export interface IBrand {
   brand_id?: number;
   name: string;
-  image_id: IImage;
+  image_id?: IImage;
   products?: object[];
   discount_id?: number
 }
@@ -41,7 +41,7 @@ export interface IBrand {
 export interface ICategory {
   category_id?: number;
   name: string;
-  image_id: IImage;
+  image_id?: IImage;
   user_id?: string;
   brand_id?: number;
   product_id?: number;
@@ -62,6 +62,7 @@ export interface IRating {
   normal_uid: number;
   values: number;
   product_id: number;
+  comment?:string;
 }
 
 export interface IAddress {
@@ -97,9 +98,9 @@ export interface IOrder {
   total_price: number;
   status: number;
   payment_status: boolean;
-  payment_type: string;
-  address_id: number;
-  items: object[];
+  payment_type?: string;
+  address_id?: number;
+  order_items?: object[];
 }
 
 export interface IOrder_item {
@@ -108,7 +109,8 @@ export interface IOrder_item {
   product_id: number;
   quantity: number;
   item_price: number;
-  order_id: number;
+  order_id?: number;
+  image?:object;
 }
 
 export interface IWishlist {

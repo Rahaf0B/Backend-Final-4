@@ -72,7 +72,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   @HasOne(() => Image, {
     foreignKey: "image_id",
   })
-  declare image_id: Image;
+  declare image?: Image;
 
   @AllowNull(false)
   @Column({
@@ -90,7 +90,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   @Column({
     type: DataType.INTEGER,
   })
-  declare order_id: number;
+  declare order_id?: number;
 
   @BelongsTo(() => Order, {
     as: "order_info",
@@ -98,7 +98,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  declare order: Order;
+  declare order?: Order;
 }
 
 export default Order_item;

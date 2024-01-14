@@ -9,6 +9,7 @@ import {
   import Product from "./Product";
 import Cart from "./Cart";
   
+
   @Table({
     timestamps: false,
     tableName: "product_cart",

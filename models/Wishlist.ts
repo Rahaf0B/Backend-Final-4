@@ -43,6 +43,7 @@ class Wishlist extends Model<IWishlist> implements IWishlist {
   })
   user: Normal_User;
 
+  
   @BelongsToMany(() => Product, () => Product_wishlist)
   product: Product[];
 }

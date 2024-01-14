@@ -75,7 +75,7 @@ class Image extends Model<IImage> implements IImage {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  declare brand: Brand;
+  declare brand?: Brand;
 
   @ForeignKey(() => Category)
   @Column({
@@ -88,7 +88,7 @@ class Image extends Model<IImage> implements IImage {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  declare category: Category;
+  declare category?: Category;
 
   @ForeignKey(() => Product)
   @Column({
@@ -101,7 +101,7 @@ class Image extends Model<IImage> implements IImage {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
-  product: Product;
+  declare product?: Product;
 
   @BelongsTo(() => Order_item, {
     foreignKey: "order_item_id",

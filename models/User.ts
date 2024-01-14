@@ -85,8 +85,6 @@ class User extends Model<IUser> implements IUser {
   })
   declare admin: Admin;
 
-  
-
   @BeforeCreate
   static passwordEncryption(instance: User) {
     try {
@@ -96,11 +94,6 @@ class User extends Model<IUser> implements IUser {
       throw new Error(e.message);
     }
   }
-
-  
- 
-
-
 }
 
 export default User;

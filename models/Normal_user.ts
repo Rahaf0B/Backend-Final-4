@@ -77,6 +77,7 @@ this.setDataValue("date_of_birth",value);
   })
   declare cart?: Cart[];
 
+  
   @HasMany(() => Order, {
     foreignKey: "normal_uid",
   })

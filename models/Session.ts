@@ -22,6 +22,7 @@ import {
 import User from "./User";
 import moment from "moment";
 
+
 @Table({
   timestamps: false,
   tableName: "session",

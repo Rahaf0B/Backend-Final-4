@@ -8,6 +8,7 @@ import {
 import Product from "./Product";
 import Discount from "./Discount";
 
+
 @Table({
   timestamps: false,
   tableName: "product_discount",
