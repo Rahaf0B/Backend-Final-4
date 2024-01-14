@@ -19,6 +19,7 @@ import { IUser } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
 import Admin from "./Admin";
 import Session from "./Session";
+import bcrypt from "bcrypt";
 
 @Table({
   timestamps: false,
@@ -84,6 +85,20 @@ class User extends Model<IUser> implements IUser {
   })
   declare admin: Admin;
 
+  
+
+  @BeforeCreate
+  static passwordEncryption(instance: User) {
+    try {
+      const salt = bcrypt.genSaltSync(10);
+      instance.password = bcrypt.hashSync(instance.password, salt);
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+
+  
+ 
 
 
 }
