@@ -94,6 +94,21 @@ class User extends Model<IUser> implements IUser {
       throw new Error(e.message);
     }
   }
+
+  @AfterCreate
+  static async createUser(instance: User) {
+    try {
+      if (instance.type === "normal_user") {
+        const userCreated = await Normal_User.create({
+          normal_uid: instance.uid,
+        });
+      } else if (instance.type === "admin") {
+        const userCreated = await Admin.create({ admin_uid: instance.uid });
+      }
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
 }
 
 export default User;

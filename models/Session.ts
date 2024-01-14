@@ -41,12 +41,7 @@ class Session extends Model {
   @Column({
     type: DataType.DATE,
   })
-  get expiration_date(): string {
-    return moment(
-      this.getDataValue("expiration_date").toString(),
-      "YYYY-MM-DD"
-    ).format("YYYY-MM-DD");
-  }
+  declare expiration_date: string;
 
   @Unique(true)
   @AllowNull(false)
