@@ -42,7 +42,7 @@ class Brand extends Model<IBrand> implements IBrand {
   @HasOne(() => Image, {
     foreignKey: "image_id",
   })
-  declare image_id?: Image;
+  declare image?: Image;
 
   @ForeignKey(() => Discount)
   @Column({

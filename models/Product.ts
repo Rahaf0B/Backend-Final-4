@@ -14,7 +14,7 @@ import {
   Default,
   BeforeCreate,
 } from "sequelize-typescript";
-import { IImage, IProduct } from "../interfaces/objInterfaces";
+import { IProduct } from "../interfaces/objInterfaces";
 import Image from "./Image";
 import Rating from "./Rating";
 import Order_item from "./Order_item";
@@ -101,7 +101,7 @@ class Product extends Model<IProduct> implements IProduct {
   declare price: number;
 
   @HasMany(() => Image, { foreignKey: "product_id" })
-  declare image: IImage[];
+  declare image: Image[];
 
   @HasMany(() => Rating, {
     foreignKey: "product_id",

@@ -11,7 +11,7 @@ import {
   AllowNull,
   BelongsTo,
 } from "sequelize-typescript";
-import { IOrder, IOrder_item } from "../interfaces/objInterfaces";
+import { IOrder } from "../interfaces/objInterfaces";
 import Order_item from "./Order_item";
 import Address from "./Address";
 import Normal_User from "./Normal_user";
@@ -78,7 +78,7 @@ class Order extends Model<IOrder> implements IOrder {
   declare address?: Address;
 
   @HasMany(() => Order_item, { foreignKey: "order_id" })
-  declare order_items: IOrder_item[];
+  declare order_items: Order_item[];
 }
 
 export default Order;

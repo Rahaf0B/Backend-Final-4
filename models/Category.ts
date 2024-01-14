@@ -40,7 +40,7 @@ class Category extends Model<ICategory> implements ICategory {
   @HasOne(() => Image, {
     foreignKey: "image_id",
   })
-  declare image_id?: Image;
+  declare image?: Image;
 
   @ForeignKey(() => Discount)
   @Column({

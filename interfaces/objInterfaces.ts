@@ -33,7 +33,7 @@ export interface IImage {
 export interface IBrand {
   brand_id?: number;
   name: string;
-  image_id?: IImage;
+  image?: IImage;
   products?: object[];
   discount_id?: number
 }
@@ -41,7 +41,7 @@ export interface IBrand {
 export interface ICategory {
   category_id?: number;
   name: string;
-  image_id?: IImage;
+  image?: IImage;
   user_id?: string;
   brand_id?: number;
   product_id?: number;
