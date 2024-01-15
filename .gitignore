@@ -27,3 +27,4 @@ dist/models/Cart.js
 dist/models/Product_cart.js
 dist/models/Session.js
 dist/classes/product.js
+dist/routes/product.js
