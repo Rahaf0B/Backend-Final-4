@@ -52,12 +52,6 @@ class Rating extends Model<IRating> implements IRating {
   @Column({
     type: DataType.INTEGER,
   })
-  @AllowNull(false)
-  @Column({
-    type: DataType.STRING,
-  })
-  declare comment?: string;
-
   declare product_id: number;
   @BelongsTo(() => Product, {
     foreignKey: "product_id",
@@ -65,6 +59,14 @@ class Rating extends Model<IRating> implements IRating {
     onUpdate: "CASCADE",
   })
   declare product: Product;
+
+  
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare comment?: string;
 }
 
 export default Rating;
