@@ -113,12 +113,13 @@ export default class CProduct {
           "image_id",
           "wishlist.product_wishlist.wishlist_id","discount.product_discount.discount_id"
         ], 
-
+        order: [["product_id", "DESC"]],
       });
       try {
         const [products, count] = await Promise.all([data, countData]);
         return [products, count];
       } catch (e: any) {
+        console.log(e)
         throw new Error(e.message);
       }
     } catch (e: any) {
