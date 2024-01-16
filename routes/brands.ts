@@ -1,15 +1,26 @@
+import express, { Router, Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
+const router = Router();
+
+router.use(cookieParser());
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: false }));
 
 //this is a dummy rout to test if my api works, will be deleted later
-async function test(req: any, res: any) {
+router.get("/test",(req: any, res: any)=> {
     try {
-        res.status(200).send({ message: "we are at Brands test, server is running" });
+        res.status(200).send({ message: "we are at Cart test, server is running" });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+});
 
-async function getAllBrands(req: any, res: any) {
+
+
+//getAllBrands
+router.get("/",(req: any, res: any)=> {
     try {
         res.status(200).send(
             {
@@ -20,8 +31,5 @@ async function getAllBrands(req: any, res: any) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
-export default {
-    test,
-    getAllBrands,
-}
+})
+export default router;
