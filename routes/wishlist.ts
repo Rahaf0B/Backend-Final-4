@@ -1,4 +1,16 @@
-async function addToWishlist(req: any, res: any) {
+import express, { Router, Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
+const router = Router();
+
+router.use(cookieParser());
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: false }));
+
+
+
+//addToWishlist
+router.post("/",(req: any, res: any)=> {
     try {
         const token = req.header('Authorization');
         const productId=req.body.product_id;
@@ -12,7 +24,5 @@ async function addToWishlist(req: any, res: any) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
-export default {
-    addToWishlist
-}
+});
+export default router;

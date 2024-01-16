@@ -1,15 +1,26 @@
+import express, { Router, Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
+const router = Router();
+
+router.use(cookieParser());
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: false }));
+
 
 //this is a dummy rout to test if my api works, will be deleted later
-async function test(req: any, res: any) {
+router.get("/test",(req: any, res: any)=> {
     try {
         res.status(200).send({ message: "we are at Cart test, server is running" });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+});
 
-async function getCartInfo(req: any, res: any) {
+
+//getCartInfo
+router.get("/",(req: any, res: any)=> {
     try {
         const token = req.header('Authorization');
         res.status(200).send(
@@ -21,9 +32,11 @@ async function getCartInfo(req: any, res: any) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+});
 
-async function addToCart(req: any, res: any) {
+
+//addToCart
+router.post("/",(req: any, res: any)=> {
     try {
         const token = req.header('Authorization');
         const productId=req.body.product_id;
@@ -39,11 +52,7 @@ async function addToCart(req: any, res: any) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+})
 
 
-export default {
-    test,
-    getCartInfo,
-    addToCart,
-}
+export default router;

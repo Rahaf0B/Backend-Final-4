@@ -14,7 +14,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 router.post(
   "/register",
   validation.UserCreateAccountValidation,
-  async (req, res) => {
+  async (req:Request, res:Response) => {
     try {
       const instance = CUser.getInstance();
 
