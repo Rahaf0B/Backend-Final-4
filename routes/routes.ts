@@ -25,8 +25,10 @@ router.get("/product/reatings/:product_id",products.getProductsRatings);
 router.get("/brands",brands.getAllBrands);
 
 router.get("/cart",cart.getCartInfo);
-router.post("/cart",cart.addToCart)
-router.post("/wishlist",wishlist.addToWishlist)
+router.post("/cart",cart.addToCart);
+
+router.post("/wishlist",wishlist.addToWishlist);
+
 router.get("/order/:order_status",order.getOrdersInfo);
 
 export default{
