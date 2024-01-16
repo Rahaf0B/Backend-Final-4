@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import Product from "../models/Product";
 import { Sequelize } from "sequelize-typescript";
-import { IProduct } from "../interfaces/objInterfaces";
+import { IBrand, IProduct } from "../interfaces/objInterfaces";
 import sequelizeConnection from "../conections/sequelizeConnection";
 import Image from "../models/Image";
 import Product_wishlist from "../models/product_wishlist";
@@ -9,6 +9,7 @@ import Wishlist from "../models/Wishlist";
 import Rating from "../models/Rating";
 import Discount from "../models/Discount";
 import { getCacheValue } from "../appCache";
+import Brand from "../models/Brand";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -205,6 +206,27 @@ export default class CProduct {
       }
     } catch (e: any) {
       throw new Error(e.message);
+    }
+  }
+
+
+
+
+  async getBrands():Promise<IBrand[]>{
+    try{
+const data= await Brand.findAll({ attributes:{exclude:["discount_id"]},include:[
+  {
+    model: Image,
+    required: false,
+    nested: true,
+    attributes: ["image_id", "name", "url"],
+    subQuery: false,
+  },
+]});
+return data;
+    }catch (e: any) {
+      throw new Error(e.message);
+
     }
   }
 }
