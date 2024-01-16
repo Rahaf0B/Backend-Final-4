@@ -28,7 +28,6 @@ export default class CProduct {
     userId?: number
   ): Promise<[IProduct[], number]> {
     try {
-      const trans = await sequelizeConnection.sequelize.transaction();
 
       const created_at = new Date().setMonth(new Date().getMonth() - 3);
       const countData = Product.count({
@@ -46,7 +45,6 @@ export default class CProduct {
             ),
           ],
         },
-        transaction: trans,
       });
       const data = Product.findAll({
         subQuery: false,
@@ -116,7 +114,6 @@ export default class CProduct {
           "wishlist.product_wishlist.wishlist_id","discount.product_discount.discount_id"
         ], 
 
-        transaction: trans,
       });
       try {
         const [products, count] = await Promise.all([data, countData]);
