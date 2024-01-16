@@ -8,6 +8,7 @@ import Product_wishlist from "../models/product_wishlist";
 import Wishlist from "../models/Wishlist";
 import Rating from "../models/Rating";
 import Discount from "../models/Discount";
+import { getCacheValue } from "../appCache";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -37,7 +38,7 @@ export default class CProduct {
 
   async filterProductByCoB(
     pageNumber: number,
-    numberOFItems: number,
+    numberOfItems: number,
     userId: number,
     conditionKey: string,
     conditionValue: string | number
@@ -45,8 +46,8 @@ export default class CProduct {
     const countData = this.getProductCount(conditionKey, conditionValue);
     const data = Product.findAll({
       subQuery: false,
-      offset:  (pageNumber - 1) * numberOFItems,
-      limit:  numberOFItems,
+      offset:  (pageNumber - 1) * numberOfItems,
+      limit:  numberOfItems,
       attributes: [
         "product_id",
         "name",
@@ -109,7 +110,7 @@ export default class CProduct {
 
   async getNewArrival(
     pageNumber: number,
-    numberOFItems: number,
+    numberOfItems: number,
     userId?: number
   ): Promise<[IProduct[], number]> {
     try {
@@ -132,8 +133,8 @@ export default class CProduct {
       });
       const data = Product.findAll({
         subQuery: false,
-        offset: pageNumber === 0 ? 0 : (pageNumber - 1) * numberOFItems,
-        limit: pageNumber === 0 ? 4 : numberOFItems,
+        offset: pageNumber === 0 ? 0 : (pageNumber - 1) * numberOfItems,
+        limit: pageNumber === 0 ? 4 : numberOfItems,
         attributes: [
           "product_id",
           "name",
