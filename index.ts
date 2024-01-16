@@ -19,17 +19,11 @@ const port = 3000;
 app.use(routes.router);
 
 
-const app = express();
-
-
-
-
 app.use(async (req, res, next)=>{ 
   res.status(404).send({message:"Not Found"});
 });
 
-app.listen(port, () => {
 
-app.listen(3000, () => {
+app.listen(port, () => {
   console.log("Express app is listening on the port 3000!");
 });
