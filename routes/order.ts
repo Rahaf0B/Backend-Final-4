@@ -9,7 +9,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 
 
 //this is a dummy rout to test if my api works, will be deleted later
-router.get("/test",(req: any, res: any)=> {
+router.get("/test",(req: Request, res: Response)=> {
     try {
         res.status(200).send({ message: "we are at Cart test, server is running" });
     } catch (error) {
@@ -19,7 +19,7 @@ router.get("/test",(req: any, res: any)=> {
 });
 
 //getOrdersInfo
-router.get("/:order_status",(req: any, res: any)=> {
+router.get("/:order_status",(req: Request, res: Response)=> {
     try {
         const token = req.header('Authorization');
         const orderStatus=req.params.order_status;

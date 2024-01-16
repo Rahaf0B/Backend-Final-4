@@ -10,7 +10,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 
 
 //addToWishlist
-router.post("/",(req: any, res: any)=> {
+router.post("/",(req: Request, res: Response)=> {
     try {
         const token = req.header('Authorization');
         const productId=req.body.product_id;

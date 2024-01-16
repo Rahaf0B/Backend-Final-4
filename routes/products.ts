@@ -1,6 +1,9 @@
 import express, { Router, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import CProduct from "../classes/product";
+import authorization from "../middleware/authorization";
+import validate from "../middleware/validationRequest";
 const router = Router();
 
 router.use(cookieParser());
@@ -8,7 +11,7 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 //getAllProducts
-router.get("/products", (req: any, res: any) => {
+router.get("/products", (req: Request, res: Response) => {
   try {
     const categoryName = req.query.category;
     const pageNumber = req.query.page_number;
@@ -24,7 +27,7 @@ router.get("/products", (req: any, res: any) => {
 });
 
 //getMostPopulurProducts
-router.get("/popular", (req: any, res: any) => {
+router.get("/popular", (req: Request, res: Response) => {
   try {
     const page_number = Number(req.query.page_number);
     res.status(200).send({
@@ -38,72 +41,89 @@ router.get("/popular", (req: any, res: any) => {
 });
 
 //getProductsByCategory
-router.get("/product-category", (req: any, res: any) => {
-  try {
-    const categoryID = req.query.category;
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getItemByCategory",
-      categoryID: categoryID,
-      pageNumber: pageNumber,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/product-category",
+  authorization.checkExistSession,
+  validate.validateGetByCategory,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const [dataInfo, countData] = await instance?.filterProductByCoB(
+        Number(req.query.page_number),
+        Number(req.query.number_of_items),
+        req.uid,
+        Number(req.query.category) ? "category_id" : "name",
+        Number(req.query.category)
+          ? Number(req.query.category)
+          : req.query.category.toString()
+      );
+      res.status(200).send({ items_count: countData, items: dataInfo });
+    } catch (e: any) {
+      res.status(500).end();
+    }
   }
-});
-
+);
 
 //getProductsByBrand
-router.get("/product-brand", (req: any, res: any) => {
+router.get(
+  "/product-brand",
+  authorization.checkExistSession,
+  validate.validateGetByBrand,
+  async (req: Request, res: Response) => {
     try {
-      const categoryID = req.query.category;
-      const pageNumber = req.query.page_number;
-      res.status(200).send({
-        function: "getItemByBrand",
-        categoryID: categoryID,
-        pageNumber: pageNumber,
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      const instance = CProduct.getInstance();
+      const [dataInfo, countData] = await instance?.filterProductByCoB(
+        Number(req.query.page_number),
+        Number(req.query.number_of_items),
+        req.uid,
+        Number(req.query.brand) ? "brand_id" : "name",
+        Number(req.query.brand)
+          ? Number(req.query.brand)
+          : req.query.brand.toString()
+      );
+      res.status(200).send({ items_count: countData, items: dataInfo });
+    } catch (e: any) {
+      res.status(500).end();
     }
-  });
-  
+  }
+);
 
 //getNewArrivalProducts
-router.get("/new-arrival", (req: any, res: any) => {
-  try {
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getNewArrivalProducts",
-      pageNumber: pageNumber,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/new-arrival",
+  authorization.checkExistSession,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const [dataInfo, countData] = await instance?.getNewArrival(
+        Number(req.query.page_number),
+        Number(req.query.number_of_items),
+        req.uid
+      );
+      res.status(200).send({ items_count: countData, items: dataInfo });
+    } catch (error) {
+      res.status(500).end();
+    }
   }
-});
+);
 
-//getHandpickedProducts 
-router.get("/handpicked-products", (req: any, res: any) => {
+//getHandpickedProducts
+router.get("/handpicked-products", (req: Request, res: Response) => {
   try {
     const pageNumber = req.query.page_number;
     res.status(200).send({
       function: "getHandpickedProducts",
       pageNumber: pageNumber,
-      
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).end();
   }
 });
 
 //getHandpickedCategories
 router.get(
   "/handpicked-categories/:number_of_categories",
-  (req: any, res: any) => {
+  (req: Request, res: Response) => {
     try {
       const numberOfCategories = req.params.number_of_categories;
       res.status(200).send({
@@ -111,14 +131,13 @@ router.get(
         numberOfCategories: numberOfCategories,
       });
     } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).end();
     }
   }
 );
 
 //getHandpickedProductsByCategoryName
-router.get("/category/handpicked", (req: any, res: any) => {
+router.get("/category/handpicked", (req: Request, res: Response) => {
   try {
     const categoryID = req.query.category;
     const pageNumber = req.query.page_number;
@@ -128,13 +147,12 @@ router.get("/category/handpicked", (req: any, res: any) => {
       pageNumber: pageNumber,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).end();
   }
 });
 
 //getLimitedEditionProducts
-router.get("/limited-edition", (req: any, res: any) => {
+router.get("/limited-edition", (req: Request, res: Response) => {
   try {
     const pageNumber = req.query.page_number;
     res.status(200).send({
@@ -148,7 +166,7 @@ router.get("/limited-edition", (req: any, res: any) => {
 });
 
 //getDiscountedProducts
-router.get("/discount-edition", (req: any, res: any) => {
+router.get("/discount-edition", (req: Request, res: Response) => {
   try {
     const pageNumber = req.query.page_number;
     res.status(200).send({
@@ -162,7 +180,7 @@ router.get("/discount-edition", (req: any, res: any) => {
 });
 
 //getProductsByTextSearch
-router.get("/search", (req: any, res: any) => {
+router.get("/search", (req: Request, res: Response) => {
   try {
     const searchValue = req.query.search_value;
     const pageNumber = req.query.page_number;
@@ -178,7 +196,7 @@ router.get("/search", (req: any, res: any) => {
 });
 
 //getProductsById
-router.get("/single-product/:product_id", (req: any, res: any) => {
+router.get("/single-product/:product_id", (req: Request, res: Response) => {
   try {
     const id = Number(req.params.product_id);
     res.status(200).send({
@@ -192,7 +210,7 @@ router.get("/single-product/:product_id", (req: any, res: any) => {
 });
 
 //get5RelatedProducts
-router.get("/related/:brand_id/:category_id", (req: any, res: any) => {
+router.get("/related/:brand_id/:category_id", (req: Request, res: Response) => {
   try {
     const prandId = Number(req.params.brand_id);
     const categoryId = Number(req.params.category_id);
@@ -208,7 +226,7 @@ router.get("/related/:brand_id/:category_id", (req: any, res: any) => {
 });
 
 //getProductsRatings
-router.get("/ratings/:product_id", (req: any, res: any) => {
+router.get("/ratings/:product_id", (req: Request, res: Response) => {
   try {
     const id = Number(req.params.product_id);
     res.status(200).send({
