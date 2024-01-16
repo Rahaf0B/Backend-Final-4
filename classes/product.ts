@@ -8,7 +8,7 @@ import Product_wishlist from "../models/product_wishlist";
 import Wishlist from "../models/Wishlist";
 import Rating from "../models/Rating";
 import Discount from "../models/Discount";
-import { getCacheValue } from "../appCache";
+import { appCache, getCacheValue } from "../appCache";
 import Brand from "../models/Brand";
 
 export default class CProduct {
@@ -47,8 +47,8 @@ export default class CProduct {
     const countData = this.getProductCount(conditionKey, conditionValue);
     const data = Product.findAll({
       subQuery: false,
-      offset:  (pageNumber - 1) * numberOfItems,
-      limit:  numberOfItems,
+      offset: (pageNumber - 1) * numberOfItems,
+      limit: numberOfItems,
       attributes: [
         "product_id",
         "name",
@@ -107,7 +107,6 @@ export default class CProduct {
       throw new Error(e.message);
     }
   }
-
 
   async getNewArrival(
     pageNumber: number,
@@ -209,24 +208,36 @@ export default class CProduct {
     }
   }
 
+  getDataValues(data: any[]) {
+    const dataValues = data.map((instance) => instance.dataValues);
+    return dataValues;
+  }
 
+  async getBrands(): Promise<IBrand[]> {
+    try {
+      let data;
+      data = getCacheValue("Brands") as IBrand[];
+      if (data) {
+        return data;
+      }
+      data = await Brand.findAll({
+        attributes: { exclude: ["discount_id"] },
+        include: [
+          {
+            model: Image,
+            required: false,
+            nested: true,
+            attributes: ["image_id", "name", "url"],
+            subQuery: false,
+          },
+        ],
+      });
 
+      appCache.set("Brands", this.getDataValues(data));
 
-  async getBrands():Promise<IBrand[]>{
-    try{
-const data= await Brand.findAll({ attributes:{exclude:["discount_id"]},include:[
-  {
-    model: Image,
-    required: false,
-    nested: true,
-    attributes: ["image_id", "name", "url"],
-    subQuery: false,
-  },
-]});
-return data;
-    }catch (e: any) {
+      return data;
+    } catch (e: any) {
       throw new Error(e.message);
-
     }
   }
 }
