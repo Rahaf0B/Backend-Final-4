@@ -5,6 +5,8 @@ import cartRoutes from './routes/cart';
 import wishListRoutes from './routes/wishlist';
 import orderRoutes from './routes/order';
 import authRoutes from './routes/user';
+import './conections/sequelizeConnection'
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

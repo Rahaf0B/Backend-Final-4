@@ -9,7 +9,7 @@ router.use(bodyParser.urlencoded({ extended: false }));
 
 
 //this is a dummy rout to test if my api works, will be deleted later
-router.get("/test",(req: any, res: any)=> {
+router.get("/test",(req: Request, res: Response)=> {
     try {
         res.status(200).send({ message: "we are at Cart test, server is running" });
     } catch (error) {
@@ -20,7 +20,7 @@ router.get("/test",(req: any, res: any)=> {
 
 
 //getCartInfo
-router.get("/",(req: any, res: any)=> {
+router.get("/",(req: Request, res: Response)=> {
     try {
         const token = req.header('Authorization');
         res.status(200).send(
@@ -36,7 +36,7 @@ router.get("/",(req: any, res: any)=> {
 
 
 //addToCart
-router.post("/",(req: any, res: any)=> {
+router.post("/",(req: Request, res: Response)=> {
     try {
         const token = req.header('Authorization');
         const productId=req.body.product_id;

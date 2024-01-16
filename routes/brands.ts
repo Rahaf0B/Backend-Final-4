@@ -8,7 +8,7 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 //this is a dummy rout to test if my api works, will be deleted later
-router.get("/test",(req: any, res: any)=> {
+router.get("/test",(req: Request, res: Response)=> {
     try {
         res.status(200).send({ message: "we are at Cart test, server is running" });
     } catch (error) {
@@ -20,7 +20,7 @@ router.get("/test",(req: any, res: any)=> {
 
 
 //getAllBrands
-router.get("/",(req: any, res: any)=> {
+router.get("/",(req: Request, res: Response)=> {
     try {
         res.status(200).send(
             {
