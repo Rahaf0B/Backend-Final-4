@@ -1,0 +1,8 @@
+
+post http://localhost:3000/wishlist
+Content-Type: application/json
+Authorization: myTokenGoesHere
+
+{
+    "product_id":8 
+}

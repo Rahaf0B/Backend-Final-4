@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && npx tsc",
+    "build": "tsc",
     "prestart": "npm run build",
     "start": "tsx watch index",
     "dev": " concurrently \"npx tsc -w\" \"tsx watch index\"  ",
