@@ -237,6 +237,7 @@ export default class CProduct {
 
       return data;
     } catch (e: any) {
+      console.log(e);
       throw new Error(e.message);
     }
   }
