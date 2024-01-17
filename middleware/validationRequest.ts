@@ -262,6 +262,8 @@ async function validateTextSearch(
     }).noUnknown(true),
   });
 
+
+  
   try {
     const response = await IDParamsSchema.validate({
       query: req.query,
@@ -271,6 +273,37 @@ async function validateTextSearch(
     return res.status(400).send(e.message);
   }
 }
+
+
+
+
+
+async function validateProductId(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let IDParamsSchema = object({
+    params: object({
+      product_id: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required"),
+  
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await IDParamsSchema.validate({
+      params: req.params,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -278,4 +311,5 @@ export default {
   validateGetByBrand,
   validateNewArrival,
   validateTextSearch,
+  validateProductId,
 };

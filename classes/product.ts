@@ -431,4 +431,83 @@ export default class CProduct {
       throw new Error(error);
     }
   }
+
+
+
+  async getSingleProduct(product_id:number,userId?:number){
+try {
+  const data = await Product.findByPk(product_id,{
+    subQuery: false,
+    attributes: [
+      "product_id",
+      "name",
+      "sub_title",
+      "price",
+      "quantity",
+      "description",
+      "category_id",
+      "brand_id",
+      [
+        Sequelize.fn(
+          "SUM",
+          Sequelize.literal(
+            `DISTINCT CASE WHEN wishlist.normal_uid = ${
+              userId ? userId : 0
+            } THEN 1 ELSE 0 END`
+          )
+        ),
+        "is_liked",
+      ],
+      [
+        Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+        "number_of_ratings",
+      ],
+      [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+      [
+        Sequelize.fn("SUM", Sequelize.col("discount.value")),
+        "discount_value",
+      ],
+    ],
+    include: [
+      {
+        model: Image,
+        required: false,
+        nested: true,
+        attributes: ["image_id", "name", "url","type"],
+        subQuery: false,
+      },
+
+      {
+        model: Wishlist,
+        required: false,
+        attributes: [],
+        subQuery: false,
+      },
+      {
+        model: Rating,
+        required: false,
+        attributes: [],
+        subQuery: false,
+      },
+      {
+        model: Discount,
+        required: false,
+        attributes: [],
+        subQuery: false,
+      },
+    ],
+    group: [
+      "product_id",
+      "image_id",
+      "wishlist.wishlist_id",
+      "rating.rating_id",
+      "discount.discount_id",
+    ],
+    order: [["product_id", "DESC"]],
+  });
+  return data;
+} catch (error:any) {
+  throw new Error(error);
+}
+  }
 }

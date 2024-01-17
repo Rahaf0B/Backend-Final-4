@@ -11,7 +11,6 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 
-
 //getAllProducts
 router.get("/products", (req: Request, res: Response) => {
   try {
@@ -215,16 +214,13 @@ router.get(
 );
 
 //getProductsById
-router.get("/single-product/:product_id", (req: Request, res: Response) => {
+router.get("/single-product/:product_id",authorization.checkExistSession, validate.validateProductId,async(req: Request, res: Response) => {
   try {
-    const id = Number(req.params.product_id);
-    res.status(200).send({
-      function: "getProductsById",
-      Id: id,
-    });
+    const instance = CProduct.getInstance();
+const data=await instance.getSingleProduct(Number(req.params.product_id));
+    res.status(200).send(data);
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).end();
   }
 });
 
