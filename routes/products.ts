@@ -81,6 +81,7 @@ router.get(
           ? Number(req.query.brand)
           : req.query.brand.toString()
       );
+
       res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (e: any) {
       res.status(500).end();
@@ -94,8 +95,6 @@ router.get(
   authorization.checkExistSession,
   async (req: Request, res: Response) => {
     try {
-      console.log(req);
-
       const instance = CProduct.getInstance();
       const [dataInfo, countData] = await instance?.getNewArrival(
         Number(req.query.page_number),
@@ -104,8 +103,6 @@ router.get(
       );
       res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (error) {
-      console.log(error);
-
       res.status(500).end();
     }
   }
