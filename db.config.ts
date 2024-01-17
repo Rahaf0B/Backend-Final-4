@@ -6,6 +6,10 @@
 //     dialect:"mysql",
 
 // }
+
+
+
+
 export default {
     Host: "sql12.freesqldatabase.com",
     USER: "sql12677559",

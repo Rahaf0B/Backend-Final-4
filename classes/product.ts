@@ -49,32 +49,7 @@ export default class CProduct {
       subQuery: false,
       offset: (pageNumber - 1) * numberOfItems,
       limit: numberOfItems,
-      attributes: [
-        "product_id",
-        "name",
-        "sub_title",
-        "price",
-        [
-          Sequelize.fn(
-            "SUM",
-            Sequelize.literal(
-              `DISTINCT CASE WHEN wishlist.normal_uid = ${
-                userId ? userId : 0
-              } THEN 1 ELSE 0 END`
-            )
-          ),
-          "is_liked",
-        ],
-        [
-          Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
-          "number_of_ratings",
-        ],
-        [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
-        [
-          Sequelize.fn("SUM", Sequelize.col("discount.value")),
-          "discount_value",
-        ],
-      ],
+      attributes: ["product_id", "name", "sub_title", "price"],
       where: {
         [conditionKey]: conditionValue,
       },
@@ -88,15 +63,53 @@ export default class CProduct {
           subQuery: false,
         },
 
-        { model: Wishlist, required: false, attributes: [], subQuery: false },
-        { model: Rating, required: false, attributes: [], subQuery: false },
-        { model: Discount, required: false, attributes: [], subQuery: false },
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [
+            [
+              Sequelize.fn(
+                "SUM",
+                Sequelize.literal(
+                  `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                    userId ? userId : 0
+                  } THEN 1 ELSE 0 END`
+                )
+              ),
+              "is_liked",
+            ],
+          ],
+          subQuery: false,
+        },
+        {
+          model: Rating,
+          required: false,
+          attributes: [
+            [
+              Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+              "number_of_ratings",
+            ],
+            [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+          ],
+          subQuery: false,
+        },
+        {
+          model: Discount,
+          required: false,
+          attributes: [
+            [
+              Sequelize.fn("SUM", Sequelize.col("discount.value")),
+              "discount_value",
+            ],
+          ],
+          subQuery: false,
+        },
       ],
       group: [
         "product_id",
-        "image_id",
-        "wishlist.product_wishlist.wishlist_id",
-        "discount.product_discount.discount_id",
+        "wishlist.wishlist_id",
+        "rating.rating_id",
+        "discount.discount_id",
       ],
       order: [["product_id", "DESC"]],
     });
@@ -113,96 +126,105 @@ export default class CProduct {
     numberOfItems: number,
     userId?: number
   ): Promise<[IProduct[], number]> {
-    try {
-      const created_at = new Date().setMonth(new Date().getMonth() - 3);
-      const countData = Product.count({
-        where: {
-          [Op.and]: [
-            Sequelize.where(
-              Sequelize.fn("date", Sequelize.col("created_at")),
-              ">=",
-              new Date(created_at).toISOString().split("T")[0]
-            ),
-            Sequelize.where(
-              Sequelize.fn("date", Sequelize.col("created_at")),
-              "<=",
-              new Date().toISOString().split("T")[0]
-            ),
-          ],
-        },
-      });
-      const data = Product.findAll({
-        subQuery: false,
-        offset: pageNumber === 0 ? 0 : (pageNumber - 1) * numberOfItems,
-        limit: pageNumber === 0 ? 4 : numberOfItems,
-        attributes: [
-          "product_id",
-          "name",
-          "sub_title",
-          "price",
-          [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.literal(
-                `DISTINCT CASE WHEN wishlist.normal_uid = ${
-                  userId ? userId : 0
-                } THEN 1 ELSE 0 END`
-              )
-            ),
-            "is_liked",
-          ],
-          [
-            Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
-            "number_of_ratings",
-          ],
-          [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
-          [
-            Sequelize.fn("SUM", Sequelize.col("discount.value")),
-            "discount_value",
-          ],
+    const created_at = new Date().setMonth(new Date().getMonth() - 3);
+    const countData = Product.count({
+      where: {
+        [Op.and]: [
+          Sequelize.where(
+            Sequelize.fn("date", Sequelize.col("created_at")),
+            ">=",
+            new Date(created_at).toISOString().split("T")[0]
+          ),
+          Sequelize.where(
+            Sequelize.fn("date", Sequelize.col("created_at")),
+            "<=",
+            new Date().toISOString().split("T")[0]
+          ),
         ],
-        where: {
-          [Op.and]: [
-            Sequelize.where(
-              Sequelize.fn("date", Sequelize.col("created_at")),
-              ">=",
-              new Date(created_at).toISOString().split("T")[0]
-            ),
-            Sequelize.where(
-              Sequelize.fn("date", Sequelize.col("created_at")),
-              "<=",
-              new Date().toISOString().split("T")[0]
-            ),
-          ],
+      },
+    });
+    const data = Product.findAll({
+      subQuery: false,
+      offset: pageNumber === 0 ? 0 : (pageNumber - 1) * numberOfItems,
+      limit: pageNumber === 0 ? 4 : numberOfItems,
+      attributes: ["product_id", "name", "sub_title", "price"],
+      where: {
+        [Op.and]: [
+          Sequelize.where(
+            Sequelize.fn("date", Sequelize.col("created_at")),
+            ">=",
+            new Date(created_at).toISOString().split("T")[0]
+          ),
+          Sequelize.where(
+            Sequelize.fn("date", Sequelize.col("created_at")),
+            "<=",
+            new Date().toISOString().split("T")[0]
+          ),
+        ],
+      },
+      include: [
+        {
+          model: Image,
+          required: false,
+          nested: true,
+          attributes: ["image_id", "name", "url"],
+          where: { type: { [Op.eq]: 1 } },
+          subQuery: false,
         },
-        include: [
-          {
-            model: Image,
-            required: false,
-            nested: true,
-            attributes: ["image_id", "name", "url"],
-            where: { type: { [Op.eq]: 1 } },
-            subQuery: false,
-          },
 
-          { model: Wishlist, required: false, attributes: [], subQuery: false },
-          { model: Rating, required: false, attributes: [], subQuery: false },
-          { model: Discount, required: false, attributes: [], subQuery: false },
-        ],
-        group: [
-          "product_id",
-          "image_id",
-          "wishlist.product_wishlist.wishlist_id",
-          "discount.product_discount.discount_id",
-        ],
-        order: [["product_id", "DESC"]],
-      });
-      try {
-        const [products, count] = await Promise.all([data, countData]);
-        return [products, count];
-      } catch (e: any) {
-        throw new Error(e.message);
-      }
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [
+            [
+              Sequelize.fn(
+                "SUM",
+                Sequelize.literal(
+                  `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                    userId ? userId : 0
+                  } THEN 1 ELSE 0 END`
+                )
+              ),
+              "is_liked",
+            ],
+          ],
+          subQuery: false,
+        },
+        {
+          model: Rating,
+          required: false,
+          attributes: [
+            [
+              Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+              "number_of_ratings",
+            ],
+            [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+          ],
+          subQuery: false,
+        },
+        {
+          model: Discount,
+          required: false,
+          attributes: [
+            [
+              Sequelize.fn("SUM", Sequelize.col("discount.value")),
+              "discount_value",
+            ],
+          ],
+          subQuery: false,
+        },
+      ],
+      group: [
+        "product_id",
+        "wishlist.wishlist_id",
+        "rating.rating_id",
+        "discount.discount_id",
+      ],
+      order: [["product_id", "DESC"]],
+    });
+    try {
+      const [products, count] = await Promise.all([data, countData]);
+      return [products, count];
     } catch (e: any) {
       throw new Error(e.message);
     }

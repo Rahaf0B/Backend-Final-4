@@ -81,6 +81,7 @@ router.get(
           ? Number(req.query.brand)
           : req.query.brand.toString()
       );
+
       res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (e: any) {
       res.status(500).end();
