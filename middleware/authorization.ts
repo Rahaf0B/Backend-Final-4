@@ -19,8 +19,6 @@ async function checkExistSession(
   }
 }
 
-
-
 async function authenticateUser(
   req: Request,
   res: Response,
@@ -36,10 +34,7 @@ async function authenticateUser(
     try {
       const sessionData = await instance.checkSession(token);
       const dateNow = new Date();
-      if (
-        !sessionData ||
-        dateNow.getDate() < new Date(sessionData.expiration_date).getDate()
-      ) {
+      if (!sessionData || dateNow > new Date(sessionData.expiration_date)) {
         return res.status(401).send("The session token is invalid");
       } else {
         req.uid = sessionData.uid;

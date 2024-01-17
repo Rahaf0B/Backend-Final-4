@@ -1,6 +1,7 @@
 import express, { Router, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import CProduct from "../classes/product";
 const router = Router();
 
 router.use(cookieParser());
@@ -20,16 +21,15 @@ router.get("/test",(req: Request, res: Response)=> {
 
 
 //getAllBrands
-router.get("/",(req: Request, res: Response)=> {
+router.get("/",async (req: Request, res: Response)=> {
     try {
+        const instance = CProduct.getInstance();
+const data= await instance.getBrands();
         res.status(200).send(
-            {
-                function: "getAllBrands",
-                
-            });
+            data);
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+       
+        res.status(500).end();
     }
 })
 export default router;

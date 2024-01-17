@@ -13,6 +13,8 @@ import {
   BelongsTo,
   Default,
   BeforeCreate,
+  Unique,
+  Index,
 } from "sequelize-typescript";
 import { IProduct } from "../interfaces/objInterfaces";
 import Image from "./Image";
@@ -43,6 +45,11 @@ class Product extends Model<IProduct> implements IProduct {
   })
   declare product_id?: number;
 
+  @Index({
+    name: 'name-index',
+    type:"FULLTEXT",
+  })
+  @Unique(true)
   @AllowNull(false)
   @Column({
     type: DataType.STRING,

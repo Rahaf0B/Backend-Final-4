@@ -11,6 +11,7 @@ import {
   HasOne,
   ForeignKey,
   BelongsTo,
+  Unique,
 } from "sequelize-typescript";
 import { ICategory } from "../interfaces/objInterfaces";
 import Image from "./Image";
@@ -31,6 +32,7 @@ class Category extends Model<ICategory> implements ICategory {
   })
   declare category_id?: number;
 
+  @Unique(true)
   @AllowNull(false)
   @Column({
     type: DataType.STRING,
