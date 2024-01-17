@@ -1,5 +1,5 @@
 node_modules
 dist
 package.json
-package-lock.json
-db.config.ts
+package-lock.jsons
+.env

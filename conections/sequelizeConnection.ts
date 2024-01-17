@@ -1,5 +1,4 @@
 import { Sequelize } from "sequelize-typescript";
-import dbConfig from "../db.config";
 import Address from "../models/Address";
 import Admin from "../models/Admin";
 import Brand from "../models/Brand";
@@ -18,14 +17,15 @@ import Product_wishlist from "../models/product_wishlist";
 import Cart from "../models/Cart";
 import Product_cart from "../models/Product_cart";
 import Session from "../models/Session";
-
+import dotenv from 'dotenv'
+dotenv.config();
 
 const sequelize = new Sequelize({
-  database: dbConfig.DB,
+  database: process.env.DB,
 
-  username: dbConfig.USER,
-  password: dbConfig.PASSWORD,
-  host: dbConfig.Host,
+  username: process.env.USER,
+  password: process.env.PASSWORD,
+  host: process.env.Host,
   port: 3306,
   dialect: "mysql",
 });
