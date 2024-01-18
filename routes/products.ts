@@ -53,11 +53,8 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items),
         req.uid,
-        Number(req.query.category) ? "category_id" : "name",
-        Number(req.query.category)
-          ? Number(req.query.category)
-          : req.query.category.toString()
-      );
+        Number(req.query.category_id),...[, ] );
+
       res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (e: any) {
       res.status(500).end();
@@ -76,11 +73,8 @@ router.get(
       const [dataInfo, countData] = await instance?.filterProductByCoB(
         Number(req.query.page_number),
         Number(req.query.number_of_items),
-        req.uid,
-        Number(req.query.brand) ? "brand_id" : "name",
-        Number(req.query.brand)
-          ? Number(req.query.brand)
-          : req.query.brand.toString()
+        req.uid,...[, ],
+        Number(req.query.brand_id) 
       );
 
       res.status(200).send({ items_count: countData, items: dataInfo });
@@ -225,18 +219,19 @@ const data=await instance.getSingleProduct(Number(req.params.product_id));
 });
 
 //get5RelatedProducts
-router.get("/related/:brand_id/:category_id", (req: Request, res: Response) => {
+router.get("/related_product",authorization.checkExistSession,validate.validateCategoryBrandID, async (req: Request, res: Response) => {
   try {
-    const prandId = Number(req.params.brand_id);
-    const categoryId = Number(req.params.category_id);
-    res.status(200).send({
-      function: "get5RelatedProducts",
-      prandId: prandId,
-      categoryId: categoryId,
-    });
+    const instance = CProduct.getInstance();
+    const [dataInfo, countData] = await instance?.filterProductByCoB(
+      ...[, ],
+      ...[, ],
+      req.uid,Number(req.query.category_id) ,
+      Number(req.query.brand_id) 
+    );
+
+    res.status(200).send({ items_count: countData, items: dataInfo });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).end();
   }
 });
 

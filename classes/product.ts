@@ -27,11 +27,17 @@ export default class CProduct {
     return CProduct.instance;
   }
 
-  async getProductCount(conditionKey: string, conditionValue: string | number) {
+  async getProductCount(  categoryId: number=0,
+    brandId: number=0) {
     try {
       const countData = await Product.count({
         where: {
-          [conditionKey]: conditionValue,
+          // [conditionKey]: conditionValue,
+          [Op.or]:[
+            {"category_id": categoryId},{
+              "brand_id": brandId
+            }
+          ]
         },
       });
       return countData;
@@ -41,13 +47,13 @@ export default class CProduct {
   }
 
   async filterProductByCoB(
-    pageNumber: number,
-    numberOfItems: number,
-    userId: number,
-    conditionKey: string,
-    conditionValue: string | number
+    pageNumber: number=1,
+    numberOfItems: number=5,
+    userId?: number,
+    categoryId: number=0,
+    brandId: number=0
   ) {
-    const countData = this.getProductCount(conditionKey, conditionValue);
+    const countData = this.getProductCount(categoryId, brandId);
     const data = Product.findAll({
       subQuery: false,
       offset: (pageNumber - 1) * numberOfItems,
@@ -79,7 +85,12 @@ export default class CProduct {
         ],
       ],
       where: {
-        [conditionKey]: conditionValue,
+        // [conditionKey]: conditionValue,
+        [Op.or]:[
+          {"category_id": categoryId},{
+            "brand_id": brandId
+          }
+        ]
       },
       include: [
         {
