@@ -105,13 +105,13 @@ router.get(
 );
 
 //getHandpickedProducts
-router.get("/handpicked-products", (req: Request, res: Response) => {
+router.get("/handpicked-products",authorization.checkExistSession, validate.validateGetByCategory,async (req: Request, res: Response) => {
   try {
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getHandpickedProducts",
-      pageNumber: pageNumber,
-    });
+
+    const instance = CProduct.getInstance();
+    const [dataInfo,countData]= await instance.handPickedProducts(  Number(req.query.page_number), Number(req.query.number_of_items),req.uid,Number(req.query.category_id));
+          
+    res.status(200).send({ items_count: countData, items: dataInfo });
   } catch (error) {
     res.status(500).end();
   }
