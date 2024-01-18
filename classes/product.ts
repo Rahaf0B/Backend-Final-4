@@ -47,8 +47,8 @@ export default class CProduct {
   }
 
   async filterProductByCoB(
-    pageNumber: number,
-    numberOfItems: number,
+    pageNumber: number=1,
+    numberOfItems: number=5,
     userId?: number,
     categoryId: number=0,
     brandId: number=0

@@ -223,8 +223,8 @@ router.get("/related_product",authorization.checkExistSession,validate.validateC
   try {
     const instance = CProduct.getInstance();
     const [dataInfo, countData] = await instance?.filterProductByCoB(
-      1,
-      5,
+      ...[, ],
+      ...[, ],
       req.uid,Number(req.query.category_id) ,
       Number(req.query.brand_id) 
     );
