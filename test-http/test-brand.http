@@ -1,3 +1,4 @@
-get  http://localhost:3000/brands
+#### works
+get  http://localhost:3000/brand
 ####
 

@@ -1,33 +1,32 @@
-get http://localhost:3000/test
-###getAllItems
-get http://localhost:3000/products?page_number=0
-###getItemByCategory
-get http://localhost:3000/product?category=someCategory&page_number=0
-###
-get http://localhost:3000/product/new-arrival?page_number=0
-###
-get http://localhost:3000/product/handpicked?page_number=0
-####
+#### getAllItems
+get http://localhost:3000/product/test
+###getAllItems works
+get http://localhost:3000/product/products?page_number=0
+###getProductsByCategory works done
+get http://localhost:3000/product/product-category?category=category&&number_of_items=5&page_number=1
+###works done
+get http://localhost:3000/product/new-arrival?page_number=1&&number_of_items=12
+####works
 get http://localhost:3000/product/handpicked-categories/5
 
-####getHandpickedCategories
+####getHandpickedCategories works
 get http://localhost:3000/product/category/handpicked?page_number=0
-####/product/category/handpicked
+####/product/category/handpicked works
 get http://localhost:3000/product/category/handpicked?category=someCategory&page_number=0
-####limited-edition
+####limited-edition works
 get http://localhost:3000/product/limited-edition?page_number=0
-####discount-edition
+####discount-edition works
 get http://localhost:3000/product/discount-edition?page_number=1
-####search_value
+####search_value works
 get http://localhost:3000/product/search?search_value=some cat or product name&&page_number=1
-####/product/:id"
+####****/product/:id"
 get http://localhost:3000/product/1
-####
+#### works
 get http://localhost:3000/product/related/1/2
-####
-get http://localhost:3000/product/reatings/1
-####/popular
-get http://localhost:3000/products/popular
+#### works
+get http://localhost:3000/product/ratings/5
+#### /popular ****
+get http://localhost:3000/product/popular
 
 ///product/reatings
 

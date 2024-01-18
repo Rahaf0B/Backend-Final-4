@@ -1,7 +1,8 @@
+####works
 get http://localhost:3000/cart
 Authorization: myTokenGoesHere
 
-####
+#### works
 post http://localhost:3000/cart
 Content-Type: application/json
 Authorization: myTokenGoesHere
