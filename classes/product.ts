@@ -16,6 +16,14 @@ import FuzzySearch from "fuzzy-search";
 
 export default class CProduct {
   private static instance: CProduct;
+  private countProductRating=Sequelize.fn("COUNT", Sequelize.col("rating.product_id"));
+  private avgProductRating=Sequelize.fn("AVG", Sequelize.col("rating.value"));
+  private discountProduct=Sequelize.fn("SUM", Sequelize.col("discount.value"));
+  private groupByProductQuery=["product_id",
+  "image_id",
+  "wishlist.wishlist_id",
+  "rating.rating_id",
+  "discount.discount_id",]
 
   private constructor() {}
 
@@ -74,12 +82,12 @@ export default class CProduct {
           "is_liked",
         ],
         [
-          Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+          this.countProductRating,
           "number_of_ratings",
         ],
-        [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+        [this.avgProductRating, "ratings"],
         [
-          Sequelize.fn("SUM", Sequelize.col("discount.value")),
+          this.discountProduct,
           "discount_value",
         ],
       ],
@@ -119,13 +127,7 @@ export default class CProduct {
           subQuery: false,
         },
       ],
-      group: [
-        "product_id",
-        "image_id",
-        "wishlist.wishlist_id",
-        "rating.rating_id",
-        "discount.discount_id",
-      ],
+      group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
     try {
@@ -179,12 +181,12 @@ export default class CProduct {
           "is_liked",
         ],
         [
-          Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+          this.countProductRating,
           "number_of_ratings",
         ],
-        [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+        [this.avgProductRating, "ratings"],
         [
-          Sequelize.fn("SUM", Sequelize.col("discount.value")),
+          this.discountProduct,
           "discount_value",
         ],
       ],
@@ -231,13 +233,7 @@ export default class CProduct {
           subQuery: false,
         },
       ],
-      group: [
-        "product_id",
-        "image_id",
-        "wishlist.wishlist_id",
-        "rating.rating_id",
-        "discount.discount_id",
-      ],
+      group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
     try {
@@ -367,12 +363,12 @@ export default class CProduct {
               "is_liked",
             ],
             [
-              Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+              this.countProductRating,
               "number_of_ratings",
             ],
-            [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+            [this.avgProductRating, "ratings"],
             [
-              Sequelize.fn("SUM", Sequelize.col("discount.value")),
+              this.discountProduct,
               "discount_value",
             ],
           ],
@@ -423,13 +419,8 @@ export default class CProduct {
               subQuery: false,
             },
           ],
-          group: [
-            "product_id",
-            "image_id",
-            "wishlist.wishlist_id",
-            "rating.rating_id",
-            "discount.discount_id",
-          ],
+          group: this.groupByProductQuery,
+          
           order: [["product_id", "DESC"]],
         });
         return data;
@@ -468,12 +459,12 @@ try {
         "is_liked",
       ],
       [
-        Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+        this.countProductRating,
         "number_of_ratings",
       ],
-      [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+      [this.avgProductRating, "ratings"],
       [
-        Sequelize.fn("SUM", Sequelize.col("discount.value")),
+        this.discountProduct,
         "discount_value",
       ],
     ],
@@ -505,13 +496,7 @@ try {
         subQuery: false,
       },
     ],
-    group: [
-      "product_id",
-      "image_id",
-      "wishlist.wishlist_id",
-      "rating.rating_id",
-      "discount.discount_id",
-    ],
+    group: this.groupByProductQuery,
     order: [["product_id", "DESC"]],
   });
   return data;
@@ -553,12 +538,12 @@ try {
           "is_liked",
         ],
         [
-          Sequelize.fn("COUNT", Sequelize.col("rating.product_id")),
+          this.countProductRating,
           "number_of_ratings",
         ],
-        [Sequelize.fn("AVG", Sequelize.col("rating.value")), "ratings"],
+        [this.avgProductRating, "ratings"],
         [
-          Sequelize.fn("SUM", Sequelize.col("discount.value")),
+          this.discountProduct,
           "discount_value",
         ],
        
@@ -598,13 +583,7 @@ try {
           subQuery: false,
         },
       ],
-      group: [
-        "product_id",
-        "image_id",
-        "wishlist.wishlist_id",
-        "rating.rating_id",
-        "discount.discount_id",
-      ],
+      group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
       having:{"ratings":{[Op.gt]:4.5},
       }

@@ -184,7 +184,7 @@ async function validateNewArrival(
         .integer(" enter a valid number")
         .nullable()
         .required("The page_number is required")
-        .min(1, "The page_number must be 1 or above"),
+        .min(0, "The page_number must be 0 or above"),
 
       number_of_items: number()
         .typeError("number_of_items must be a number")
