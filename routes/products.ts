@@ -10,6 +10,8 @@ router.use(cookieParser());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
+
+
 //getAllProducts
 router.get("/products", (req: Request, res: Response) => {
   try {
@@ -93,6 +95,7 @@ router.get(
 router.get(
   "/new-arrival",
   authorization.checkExistSession,
+  validate.validateNewArrival,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
@@ -181,20 +184,35 @@ router.get("/discount-edition", (req: Request, res: Response) => {
 });
 
 //getProductsByTextSearch
-router.get("/search", (req: Request, res: Response) => {
-  try {
-    const searchValue = req.query.search_value;
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getProductsByTextSearch",
-      searchValue: searchValue,
-      pageNumber: pageNumber,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/search",
+  authorization.checkExistSession,
+  validate.validateTextSearch,
+  async (req: Request, res: Response) => {
+    try {
+      const searchValue = req.query.search_value;
+      const pageNumber = req.query.page_number;
+
+      const instance = CProduct.getInstance();
+      const data = await instance.search(
+        req.query.search_value.toString(),
+        Number(req.query.page_number),
+        Number(req.query.number_of_items),
+        req.uid
+      );
+      res.status(200).send(data);
+
+      res.status(200).send({
+        function: "getProductsByTextSearch",
+        searchValue: searchValue,
+        pageNumber: pageNumber,
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
 //getProductsById
 router.get("/single-product/:product_id", (req: Request, res: Response) => {

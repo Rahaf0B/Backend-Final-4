@@ -202,9 +202,80 @@ async function validateGetByBrand(
   }
 }
 
+async function validateNewArrival(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let IDParamsSchema = object({
+    query: object({
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await IDParamsSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+async function validateTextSearch(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let IDParamsSchema = object({
+    query: object({
+      search_value: string()
+        .strict(true)
+        .typeError("The Last Name Should be String")
+        .nullable()
+        .required("The Last Name is required"),
+
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await IDParamsSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
   validateGetByCategory,
   validateGetByBrand,
+  validateNewArrival,
+  validateTextSearch,
 };
