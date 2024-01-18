@@ -46,6 +46,7 @@ export default class CProduct {
   async getProductCount(categoryId: number = 0, brandId: number = 0) {
     try {
       const countData = await Product.count({
+        distinct: true,
         where: {
           [Op.or]: [
             { category_id: categoryId },
@@ -148,6 +149,7 @@ export default class CProduct {
   ): Promise<[IProduct[], number]> {
     const created_at = new Date().setMonth(new Date().getMonth() - 3);
     const countData = Product.count({
+      distinct: true,
       where: {
         [Op.and]: [
           Sequelize.where(
@@ -333,6 +335,7 @@ export default class CProduct {
   ) {
     try {
       const count = await Product.count({
+        distinct: true,
         where: {
           [Op.or]: [
             {
@@ -596,10 +599,11 @@ export default class CProduct {
       throw new Error(e.message);
     }
   }
-  async countPopularAndDiscountProducts(filterType: string, value: number) {
+  async countPopularAndDiscountProducts(filterType: string, value?: number) {
     try {
       const count = await Product.count({
         distinct: true,
+        where:[filterType=="limited" ? {quantity:{[Op.lt]:value}} : {} ],
         include: [
           filterType == "discount"
             ? {
@@ -615,7 +619,14 @@ export default class CProduct {
                   [Op.and]: [{ value: { [Op.gte]: value } }],
                 },
               }
-            : null,
+            : {
+              model:Discount,
+              required:false,
+              attributes:[]
+
+
+
+            } ,
         ],
       });
 
@@ -703,4 +714,87 @@ export default class CProduct {
       throw new Error(e.message);
     }
   }
+
+
+
+
+
+
+
+
+
+
+  async limitedEditionProducts(
+    pageNumber: number = 1,
+    numberOfItems: number = 5,
+    userId?: number,
+  ) {
+    const countData = this.countPopularAndDiscountProducts("limited",20);
+
+    const data = await Product.findAll({
+      subQuery: false,
+      offset: (pageNumber - 1) * numberOfItems,
+      limit: numberOfItems,
+      attributes: [
+        "product_id",
+        "name",
+        "sub_title",
+        "price",
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                userId ? userId : 0
+              } THEN 1 ELSE 0 END`
+            )
+          ),
+          "is_liked",
+        ],
+        [this.countProductRating, "number_of_ratings"],
+        [this.avgProductRating, "ratings"],
+        [this.discountProduct, "discount_value"],
+      ],
+      where: {
+        quantity:{[Op.lt]:20}
+      },
+      include: [
+        {
+          model: Image,
+          required: false,
+          nested: true,
+          attributes: ["image_id", "name", "url"],
+          where: { type: { [Op.eq]: 1 } },
+          subQuery: false,
+        },
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Rating,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Discount,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+      ],
+      group: this.groupByProductQuery,
+      order: [["product_id", "DESC"]],
+    });
+    try {
+      const [products, count] = await Promise.all([data, countData]);
+      return [products, count];
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+
+
 }

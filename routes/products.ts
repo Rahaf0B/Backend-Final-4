@@ -10,13 +10,6 @@ router.use(cookieParser());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-router.get("/test", async (req: Request, res: Response) => {
-  try {
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 //getAllProducts
 router.get("/products", (req: Request, res: Response) => {
@@ -103,7 +96,7 @@ router.get(
 router.get(
   "/new-arrival",
   authorization.checkExistSession,
-  validate.validateNewArrival,
+  validate.validatePageAndItemNumber,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
@@ -173,13 +166,14 @@ router.get("/category/handpicked", (req: Request, res: Response) => {
 });
 
 //getLimitedEditionProducts
-router.get("/limited-edition", (req: Request, res: Response) => {
+router.get("/limited-edition",authorization.checkExistSession,
+validate.validatePageAndItemNumber, async (req: Request, res: Response) => {
   try {
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getLimitedEditionProducts",
-      pageNumber: pageNumber,
-    });
+    const instance = CProduct.getInstance();
+    const [dataInfo,countData]=await instance.limitedEditionProducts(Number(req.query.page_number),
+    Number(req.query.number_of_items),req.uid);
+    res.status(200).send({ items_count: countData, items: dataInfo });
+
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -190,7 +184,6 @@ router.get("/limited-edition", (req: Request, res: Response) => {
 router.get("/discount-edition",  authorization.checkExistSession,
 validate.validatePopularDiscount ,async (req: Request, res: Response) => {
   try {
-    const page_number = Number(req.query.page_number);
     const instance = CProduct.getInstance();
     const [dataInfo, countData] = await instance.popularAndDiscountProducts(
       Number(req.query.page_number),
