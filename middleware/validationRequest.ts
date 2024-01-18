@@ -1,4 +1,4 @@
-import { object, string, number, date, mixed, lazy } from "yup";
+import { object, string, number, date, mixed, lazy, } from "yup";
 import { Request, Response, NextFunction, query } from "express";
 import { parse } from "date-fns";
 
@@ -101,7 +101,7 @@ async function validateGetByCategory(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       page_number: number()
         .typeError("page_number must be a number")
@@ -125,7 +125,7 @@ async function validateGetByCategory(
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -139,7 +139,7 @@ async function validateGetByBrand(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       page_number: number()
         .typeError("page_number must be a number")
@@ -163,7 +163,7 @@ async function validateGetByBrand(
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -177,7 +177,7 @@ async function validateNewArrival(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       page_number: number()
         .typeError("page_number must be a number")
@@ -195,7 +195,7 @@ async function validateNewArrival(
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -209,7 +209,7 @@ async function validateTextSearch(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       search_value: string()
         .strict(true)
@@ -235,7 +235,7 @@ async function validateTextSearch(
 
   
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -250,7 +250,7 @@ async function validateCategoryBrandID(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       category_id: number()
         .typeError("category_id must be a number")
@@ -268,7 +268,7 @@ async function validateCategoryBrandID(
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -283,7 +283,7 @@ async function validateProductId(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     params: object({
       product_id: number()
         .typeError("page_number must be a number")
@@ -295,8 +295,48 @@ async function validateProductId(
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       params: req.params,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+
+async function validatePopularDiscount(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required"),
+
+      value: number().round( 'floor')
+      .typeError("value must be a number")
+      .integer(" enter a valid number")
+      .nullable()
+      .required("The value is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
     });
     next();
   } catch (e: any) {
@@ -313,4 +353,5 @@ export default {
   validateTextSearch,
   validateProductId,
   validateCategoryBrandID,
+  validatePopularDiscount,
 };

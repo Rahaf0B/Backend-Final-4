@@ -16,14 +16,22 @@ import FuzzySearch from "fuzzy-search";
 
 export default class CProduct {
   private static instance: CProduct;
-  private countProductRating=Sequelize.fn("COUNT", Sequelize.col("rating.product_id"));
-  private avgProductRating=Sequelize.fn("AVG", Sequelize.col("rating.value"));
-  private discountProduct=Sequelize.fn("SUM", Sequelize.col("discount.value"));
-  private groupByProductQuery=["product_id",
-  "image_id",
-  "wishlist.wishlist_id",
-  "rating.rating_id",
-  "discount.discount_id",]
+  private countProductRating = Sequelize.fn(
+    "COUNT",
+    Sequelize.col("rating.product_id")
+  );
+  private avgProductRating = Sequelize.fn("AVG", Sequelize.col("rating.value"));
+  private discountProduct = Sequelize.fn(
+    "SUM",
+    Sequelize.col("discount.value")
+  );
+  private groupByProductQuery = [
+    "product_id",
+    "image_id",
+    "wishlist.wishlist_id",
+    "rating.rating_id",
+    "discount.discount_id",
+  ];
 
   private constructor() {}
 
@@ -35,16 +43,16 @@ export default class CProduct {
     return CProduct.instance;
   }
 
-  async getProductCount(  categoryId: number=0,
-    brandId: number=0) {
+  async getProductCount(categoryId: number = 0, brandId: number = 0) {
     try {
       const countData = await Product.count({
         where: {
-          [Op.or]:[
-            {"category_id": categoryId},{
-              "brand_id": brandId
-            }
-          ]
+          [Op.or]: [
+            { category_id: categoryId },
+            {
+              brand_id: brandId,
+            },
+          ],
         },
       });
       return countData;
@@ -54,11 +62,11 @@ export default class CProduct {
   }
 
   async filterProductByCoB(
-    pageNumber: number=1,
-    numberOfItems: number=5,
+    pageNumber: number = 1,
+    numberOfItems: number = 5,
     userId?: number,
-    categoryId: number=0,
-    brandId: number=0
+    categoryId: number = 0,
+    brandId: number = 0
   ) {
     const countData = this.getProductCount(categoryId, brandId);
     const data = Product.findAll({
@@ -81,22 +89,17 @@ export default class CProduct {
           ),
           "is_liked",
         ],
-        [
-          this.countProductRating,
-          "number_of_ratings",
-        ],
+        [this.countProductRating, "number_of_ratings"],
         [this.avgProductRating, "ratings"],
-        [
-          this.discountProduct,
-          "discount_value",
-        ],
+        [this.discountProduct, "discount_value"],
       ],
       where: {
-        [Op.or]:[
-          {"category_id": categoryId},{
-            "brand_id": brandId
-          }
-        ]
+        [Op.or]: [
+          { category_id: categoryId },
+          {
+            brand_id: brandId,
+          },
+        ],
       },
       include: [
         {
@@ -180,15 +183,9 @@ export default class CProduct {
           ),
           "is_liked",
         ],
-        [
-          this.countProductRating,
-          "number_of_ratings",
-        ],
+        [this.countProductRating, "number_of_ratings"],
         [this.avgProductRating, "ratings"],
-        [
-          this.discountProduct,
-          "discount_value",
-        ],
+        [this.discountProduct, "discount_value"],
       ],
       where: {
         [Op.and]: [
@@ -329,7 +326,36 @@ export default class CProduct {
       throw new Error(e);
     }
   }
-
+  async countSearchResults(
+    searchString: string,
+    categoryId: number[],
+    brandId: number[]
+  ) {
+    try {
+      const count = await Product.count({
+        where: {
+          [Op.or]: [
+            {
+              category_id: {
+                [Op.in]: categoryId,
+              },
+            },
+            {
+              brand_id: {
+                [Op.in]: brandId,
+              },
+            },
+            Sequelize.literal(
+              `MATCH (product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
+            ),
+          ],
+        },
+      });
+      return count;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
   async search(
     searchString: string,
     pageNumber: number,
@@ -341,89 +367,89 @@ export default class CProduct {
         searchString
       );
 
-      try {
-        const data = Product.findAll({
-          subQuery: false,
-          offset: (pageNumber - 1) * numberOfItems,
-          limit: numberOfItems,
-          attributes: [
-            "product_id",
-            "name",
-            "sub_title",
-            "price",
-            [
-              Sequelize.fn(
-                "SUM",
-                Sequelize.literal(
-                  `DISTINCT CASE WHEN wishlist.normal_uid = ${
-                    userId ? userId : 0
-                  } THEN 1 ELSE 0 END`
-                )
-              ),
-              "is_liked",
-            ],
-            [
-              this.countProductRating,
-              "number_of_ratings",
-            ],
-            [this.avgProductRating, "ratings"],
-            [
-              this.discountProduct,
-              "discount_value",
-            ],
-          ],
-          where: {
-            [Op.or]: [
-              {
-                category_id: {
-                  [Op.in]: categoryId,
-                },
-              },
-
-              {
-                brand_id: {
-                  [Op.in]: brandId,
-                },
-              },
+      const countData = this.countSearchResults(
+        searchString,
+        categoryId,
+        brandId
+      );
+      const data = Product.findAll({
+        subQuery: false,
+        offset: (pageNumber - 1) * numberOfItems,
+        limit: numberOfItems,
+        attributes: [
+          "product_id",
+          "name",
+          "sub_title",
+          "price",
+          [
+            Sequelize.fn(
+              "SUM",
               Sequelize.literal(
-                `MATCH (product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
-              ),
-            ],
-          },
-          include: [
+                `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                  userId ? userId : 0
+                } THEN 1 ELSE 0 END`
+              )
+            ),
+            "is_liked",
+          ],
+          [this.countProductRating, "number_of_ratings"],
+          [this.avgProductRating, "ratings"],
+          [this.discountProduct, "discount_value"],
+        ],
+        where: {
+          [Op.or]: [
             {
-              model: Image,
-              required: false,
-              nested: true,
-              attributes: ["image_id", "name", "url"],
-              where: { type: { [Op.eq]: 1 } },
-              subQuery: false,
+              category_id: {
+                [Op.in]: categoryId,
+              },
             },
 
             {
-              model: Wishlist,
-              required: false,
-              attributes: [],
-              subQuery: false,
+              brand_id: {
+                [Op.in]: brandId,
+              },
             },
-            {
-              model: Rating,
-              required: false,
-              attributes: [],
-              subQuery: false,
-            },
-            {
-              model: Discount,
-              required: false,
-              attributes: [],
-              subQuery: false,
-            },
+            Sequelize.literal(
+              `MATCH (product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
+            ),
           ],
-          group: this.groupByProductQuery,
-          
-          order: [["product_id", "DESC"]],
-        });
-        return data;
+        },
+        include: [
+          {
+            model: Image,
+            required: false,
+            nested: true,
+            attributes: ["image_id", "name", "url"],
+            where: { type: { [Op.eq]: 1 } },
+            subQuery: false,
+          },
+
+          {
+            model: Wishlist,
+            required: false,
+            attributes: [],
+            subQuery: false,
+          },
+          {
+            model: Rating,
+            required: false,
+            attributes: [],
+            subQuery: false,
+          },
+          {
+            model: Discount,
+            required: false,
+            attributes: [],
+            subQuery: false,
+          },
+        ],
+        group: this.groupByProductQuery,
+
+        order: [["product_id", "DESC"]],
+      });
+      try {
+        const [products, count] = await Promise.all([data, countData]);
+        return [products, count];
       } catch (error: any) {
         throw new Error(error);
       }
@@ -432,88 +458,76 @@ export default class CProduct {
     }
   }
 
+  async getSingleProduct(product_id: number, userId?: number) {
+    try {
+      const data = await Product.findByPk(product_id, {
+        subQuery: false,
+        attributes: [
+          "product_id",
+          "name",
+          "sub_title",
+          "price",
+          "quantity",
+          "description",
+          "category_id",
+          "brand_id",
+          [
+            Sequelize.fn(
+              "SUM",
+              Sequelize.literal(
+                `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                  userId ? userId : 0
+                } THEN 1 ELSE 0 END`
+              )
+            ),
+            "is_liked",
+          ],
+          [this.countProductRating, "number_of_ratings"],
+          [this.avgProductRating, "ratings"],
+          [this.discountProduct, "discount_value"],
+        ],
+        include: [
+          {
+            model: Image,
+            required: false,
+            nested: true,
+            attributes: ["image_id", "name", "url", "type"],
+            subQuery: false,
+          },
 
-
-  async getSingleProduct(product_id:number,userId?:number){
-try {
-  const data = await Product.findByPk(product_id,{
-    subQuery: false,
-    attributes: [
-      "product_id",
-      "name",
-      "sub_title",
-      "price",
-      "quantity",
-      "description",
-      "category_id",
-      "brand_id",
-      [
-        Sequelize.fn(
-          "SUM",
-          Sequelize.literal(
-            `DISTINCT CASE WHEN wishlist.normal_uid = ${
-              userId ? userId : 0
-            } THEN 1 ELSE 0 END`
-          )
-        ),
-        "is_liked",
-      ],
-      [
-        this.countProductRating,
-        "number_of_ratings",
-      ],
-      [this.avgProductRating, "ratings"],
-      [
-        this.discountProduct,
-        "discount_value",
-      ],
-    ],
-    include: [
-      {
-        model: Image,
-        required: false,
-        nested: true,
-        attributes: ["image_id", "name", "url","type"],
-        subQuery: false,
-      },
-
-      {
-        model: Wishlist,
-        required: false,
-        attributes: [],
-        subQuery: false,
-      },
-      {
-        model: Rating,
-        required: false,
-        attributes: [],
-        subQuery: false,
-      },
-      {
-        model: Discount,
-        required: false,
-        attributes: [],
-        subQuery: false,
-      },
-    ],
-    group: this.groupByProductQuery,
-    order: [["product_id", "DESC"]],
-  });
-  return data;
-} catch (error:any) {
-  throw new Error(error);
-}
+          {
+            model: Wishlist,
+            required: false,
+            attributes: [],
+            subQuery: false,
+          },
+          {
+            model: Rating,
+            required: false,
+            attributes: [],
+            subQuery: false,
+          },
+          {
+            model: Discount,
+            required: false,
+            attributes: [],
+            subQuery: false,
+          },
+        ],
+        group: this.groupByProductQuery,
+        order: [["product_id", "DESC"]],
+      });
+      return data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
   }
 
-
-
-
-
   async handPickedProducts(
-    pageNumber: number=1,
-    numberOfItems: number=5,
+    pageNumber: number = 1,
+    numberOfItems: number = 5,
     userId?: number,
-    categoryId: number=0,
+    categoryId: number = 0
   ) {
     const countData = this.getProductCount(categoryId);
 
@@ -537,22 +551,12 @@ try {
           ),
           "is_liked",
         ],
-        [
-          this.countProductRating,
-          "number_of_ratings",
-        ],
+        [this.countProductRating, "number_of_ratings"],
         [this.avgProductRating, "ratings"],
-        [
-          this.discountProduct,
-          "discount_value",
-        ],
-       
+        [this.discountProduct, "discount_value"],
       ],
       where: {
-        [Op.and]:[
-          {"category_id": categoryId},
-          {"price": {[Op.lt]:100}},
-        ]
+        [Op.and]: [{ category_id: categoryId }, { price: { [Op.lt]: 100 } }],
       },
       include: [
         {
@@ -571,10 +575,8 @@ try {
         },
         {
           model: Rating,
-          required: false,
           attributes: [],
           subQuery: false,
-          
         },
         {
           model: Discount,
@@ -585,8 +587,7 @@ try {
       ],
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
-      having:{"ratings":{[Op.gt]:4.5},
-      }
+      having: { ratings: { [Op.gt]: 4.5 } },
     });
     try {
       const [products, count] = await Promise.all([data, countData]);
@@ -595,7 +596,111 @@ try {
       throw new Error(e.message);
     }
   }
+  async countPopularAndDiscountProducts(filterType: string, value: number) {
+    try {
+      const count = await Product.count({
+        distinct: true,
+        include: [
+          filterType == "discount"
+            ? {
+                model: Discount,
+                where: {
+                  [Op.and]: [{ value: { [Op.gte]: value } }],
+                },
+              }
+            : filterType == "rating"
+            ? {
+                model: Rating,
+                where: {
+                  [Op.and]: [{ value: { [Op.gte]: value } }],
+                },
+              }
+            : null,
+        ],
+      });
 
+      return count;
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
+  }
 
+  async popularAndDiscountProducts(
+    pageNumber: number = 1,
+    numberOfItems: number = 5,
+    filterType: string,
+    userId?: number,
+    value: number = 0
+  ) {
+    const countData = this.countPopularAndDiscountProducts(filterType, value);
+    const data = Product.findAll({
+      subQuery: false,
+      offset: (pageNumber - 1) * numberOfItems,
+      limit: numberOfItems,
+      attributes: [
+        "product_id",
+        "name",
+        "sub_title",
+        "price",
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                userId ? userId : 0
+              } THEN 1 ELSE 0 END`
+            )
+          ),
+          "is_liked",
+        ],
+        [this.countProductRating, "number_of_ratings"],
+        [this.avgProductRating, "ratings"],
+        [this.discountProduct, "discount_value"],
+      ],
 
+      include: [
+        {
+          model: Image,
+          required: false,
+          nested: true,
+          attributes: ["image_id", "name", "url"],
+          where: { type: { [Op.eq]: 1 } },
+          subQuery: false,
+        },
+
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Rating,
+          required: filterType == "rating" ? false : true,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Discount,
+          required: filterType == "discount" ? false : true,
+          attributes: [],
+          subQuery: false,
+        },
+      ],
+      group: this.groupByProductQuery,
+      order: [["product_id", "DESC"]],
+      having:
+        filterType == "discount"
+          ? { discount_value: { [Op.gte]: value } }
+          : filterType == "rating"
+          ? { ratings: { [Op.gte]: value } }
+          : null,
+    });
+    try {
+      const [products, count] = await Promise.all([data, countData]);
+      return [products, count];
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
 }
