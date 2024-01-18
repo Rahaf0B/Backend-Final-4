@@ -172,7 +172,7 @@ async function validateGetByBrand(
   }
 }
 
-async function validateNewArrival(
+async function validatePageAndItemNumber(
   req: Request,
   res: Response,
   next: NextFunction
@@ -349,7 +349,7 @@ export default {
   UserLoginValidation,
   validateGetByCategory,
   validateGetByBrand,
-  validateNewArrival,
+  validatePageAndItemNumber,
   validateTextSearch,
   validateProductId,
   validateCategoryBrandID,
