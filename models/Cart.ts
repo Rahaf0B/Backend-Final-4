@@ -31,12 +31,6 @@ import {
     declare cart_id?: number;
   
     @AllowNull(false)
-    @Column({
-      type: DataType.INTEGER,
-    })
-    declare quantity: number;
-  
-    @AllowNull(false)
     @ForeignKey(() => Normal_User)
     @Column({
       type: DataType.INTEGER,
