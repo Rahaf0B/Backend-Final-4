@@ -49,6 +49,7 @@ import Cart from "./Cart";
       type: DataType.INTEGER,
     })
     declare quantity: number;
+
   }
   export default Product_cart;
   
