@@ -146,7 +146,7 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number,
     userId?: number
-  ): Promise<[IProduct[], number]> {
+  ): Promise<(number | Product[])[]> {
     const created_at = new Date().setMonth(new Date().getMonth() - 3);
     const countData = Product.count({
       distinct: true,
@@ -243,7 +243,7 @@ export default class CProduct {
     }
   }
 
-  getDataValues(data: any[]) {
+  getDataValues(data: any[]): any[] {
     const dataValues = data.map((instance) => instance.dataValues);
     return dataValues;
   }
@@ -303,9 +303,7 @@ export default class CProduct {
       throw new Error(e.message);
     }
   }
-  async searchThroughCategoryBrandNames(
-    name: string
-  ): Promise<[number[], number[]]> {
+  async searchThroughCategoryBrandNames(name: string): Promise<number[][]> {
     const categoryInfo = this.getCategory();
     const brandInfo = this.getBrands();
 
@@ -332,7 +330,7 @@ export default class CProduct {
     searchString: string,
     categoryId: number[],
     brandId: number[]
-  ) {
+  ): Promise<number> {
     try {
       const count = await Product.count({
         distinct: true,
@@ -364,7 +362,7 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number,
     userId?: number
-  ) {
+  ): Promise<(number | Product[])[]> {
     try {
       const [categoryId, brandId] = await this.searchThroughCategoryBrandNames(
         searchString
@@ -461,7 +459,10 @@ export default class CProduct {
     }
   }
 
-  async getSingleProduct(product_id: number, userId?: number) {
+  async getSingleProduct(
+    product_id: number,
+    userId?: number
+  ): Promise<Product> {
     try {
       const data = await Product.findByPk(product_id, {
         subQuery: false,
@@ -531,7 +532,7 @@ export default class CProduct {
     numberOfItems: number = 5,
     userId?: number,
     categoryId: number = 0
-  ) {
+  ): Promise<(number | Product[])[]> {
     const countData = this.getProductCount(categoryId);
 
     const data = await Product.findAll({
@@ -599,11 +600,16 @@ export default class CProduct {
       throw new Error(e.message);
     }
   }
-  async countPopularAndDiscountProducts(filterType: string, value?: number) {
+  async countPopularAndDiscountProducts(
+    filterType: string,
+    value?: number
+  ): Promise<number> {
     try {
       const count = await Product.count({
         distinct: true,
-        where:[filterType=="limited" ? {quantity:{[Op.lt]:value}} : {} ],
+        where: [
+          filterType == "limited" ? { quantity: { [Op.lt]: value } } : {},
+        ],
         include: [
           filterType == "discount"
             ? {
@@ -620,13 +626,10 @@ export default class CProduct {
                 },
               }
             : {
-              model:Discount,
-              required:false,
-              attributes:[]
-
-
-
-            } ,
+                model: Discount,
+                required: false,
+                attributes: [],
+              },
         ],
       });
 
@@ -642,7 +645,7 @@ export default class CProduct {
     filterType: string,
     userId?: number,
     value: number = 0
-  ) {
+  ): Promise<(number | Product[])[]> {
     const countData = this.countPopularAndDiscountProducts(filterType, value);
     const data = Product.findAll({
       subQuery: false,
@@ -715,21 +718,12 @@ export default class CProduct {
     }
   }
 
-
-
-
-
-
-
-
-
-
   async limitedEditionProducts(
     pageNumber: number = 1,
     numberOfItems: number = 5,
-    userId?: number,
+    userId?: number
   ) {
-    const countData = this.countPopularAndDiscountProducts("limited",20);
+    const countData = this.countPopularAndDiscountProducts("limited", 20);
 
     const data = await Product.findAll({
       subQuery: false,
@@ -756,7 +750,7 @@ export default class CProduct {
         [this.discountProduct, "discount_value"],
       ],
       where: {
-        quantity:{[Op.lt]:20}
+        quantity: { [Op.lt]: 20 },
       },
       include: [
         {
@@ -795,6 +789,4 @@ export default class CProduct {
       throw new Error(e.message);
     }
   }
-
-
 }
