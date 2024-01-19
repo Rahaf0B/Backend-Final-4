@@ -20,7 +20,7 @@ import Product_cart from "../models/Product_cart";
 import Session from "../models/Session";
 
 
-const sequelize = new Sequelize({
+/*const sequelize = new Sequelize({
   database: dbConfig.DB,
 
   username: dbConfig.USER,
@@ -28,8 +28,18 @@ const sequelize = new Sequelize({
   host: dbConfig.Host,
   port: 3306,
   dialect: "mysql",
+});*/
+const sequelize = new Sequelize(
+  "finaldp", 
+  "root", 
+  "", {
+  host: "localhost",
+  dialect: "mysql",
+  pool: {
+    max: 10,
+    min: 1,
+  }
 });
-
 sequelize.addModels([Address,Admin,Brand,Cart,Category,Discount,Image,Normal_User,Order_item,Order,Product_cart,Product_discount,Product_wishlist,Product,Rating,Session,User,Wishlist]);
 sequelize
   .authenticate()

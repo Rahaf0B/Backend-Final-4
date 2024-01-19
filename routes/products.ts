@@ -227,17 +227,31 @@ router.get("/related/:brand_id/:category_id", (req: Request, res: Response) => {
 });
 
 //getProductsRatings
-router.get("/ratings/:product_id", (req: Request, res: Response) => {
+router.get("/ratings/:product_id", async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.product_id);
+    const productId = Number(req.params.product_id);
+    const instance = CProduct.getInstance();
+    const dataInfo = await instance?.getProductRatings(productId);
     res.status(200).send({
       function: "getProductsRatings",
-      Id: id,
+      dataInfo: dataInfo,
     });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
+//getProductById
+router.get("/:id",(req: Request,res:Response)=>{
+  try {
+    const productId = req.params.id;
+    res.status(200).send({
+      function: "getProductById",
+      pageNumber: productId,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 export default router;

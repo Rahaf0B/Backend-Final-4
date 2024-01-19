@@ -10,11 +10,14 @@ import Rating from "../models/Rating";
 import Discount from "../models/Discount";
 import { appCache, getCacheValue } from "../appCache";
 import Brand from "../models/Brand";
+import { join } from "path";
+import Normal_User from "../models/Normal_user";
+import User from "../models/User";
 
 export default class CProduct {
   private static instance: CProduct;
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): CProduct {
     if (CProduct.instance) {
@@ -71,8 +74,7 @@ export default class CProduct {
               Sequelize.fn(
                 "SUM",
                 Sequelize.literal(
-                  `DISTINCT CASE WHEN wishlist.normal_uid = ${
-                    userId ? userId : 0
+                  `DISTINCT CASE WHEN wishlist.normal_uid = ${userId ? userId : 0
                   } THEN 1 ELSE 0 END`
                 )
               ),
@@ -180,8 +182,7 @@ export default class CProduct {
               Sequelize.fn(
                 "SUM",
                 Sequelize.literal(
-                  `DISTINCT CASE WHEN wishlist.normal_uid = ${
-                    userId ? userId : 0
+                  `DISTINCT CASE WHEN wishlist.normal_uid = ${userId ? userId : 0
                   } THEN 1 ELSE 0 END`
                 )
               ),
@@ -261,5 +262,27 @@ export default class CProduct {
     } catch (e: any) {
       throw new Error(e.message);
     }
+  }
+
+  async getProductRatings(productId: number) {
+
+    let ratings = await Rating.findAll({
+      where: { product_id: productId },
+      include: {
+        model: Normal_User,
+        attributes: ["normal_uid"],//do not edit
+        where: { 
+          normal_uid: Sequelize.col('Rating.normal_uid') },
+        include: [
+          {
+          model: User,
+          attributes: ["uid", "first_name", "last_name"],
+          where: {
+             uid: Sequelize.col('Rating.normal_uid') },
+        }],
+      },
+    });
+
+    return ratings;
   }
 }
