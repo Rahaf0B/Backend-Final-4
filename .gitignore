@@ -3,5 +3,7 @@ build
 package.json
 package-lock.jsons
 .env
+db.config.ts
+dist
 test-http
 
