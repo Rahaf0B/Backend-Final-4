@@ -6,4 +6,4 @@ package-lock.jsons
 db.config.ts
 dist
 test-http
-
+sequelizeConnection.ts
