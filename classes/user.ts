@@ -8,6 +8,9 @@ import { NUMBER } from "sequelize";
 import Wishlist from "../models/Wishlist";
 import Product_wishlist from "../models/product_wishlist";
 import sequelizeConnection from "../conections/sequelizeConnection";
+import Cart from "../models/Cart";
+import Product_cart from "../models/Product_cart";
+import CProduct from "./product";
 
 export default class CUser {
   private static instance: CUser;
@@ -145,39 +148,46 @@ export default class CUser {
   async addToWishlist(productId: number, userId: number): Promise<boolean> {
     try {
       const trans = await sequelizeConnection.sequelize.transaction();
-
       try {
-        const wishlist = await Wishlist.findOrCreate({
-          where: { normal_uid: userId },
-          transaction: trans,
-          lock: true,
-        });
-
-        const wishlistInfo = wishlist[0].toJSON();
-        try {
-          const wishlistProduct = await Product_wishlist.findOrCreate({
-            where: {
-              product_id: productId,
-              wishlist_id: wishlistInfo.wishlist_id,
-            },
-            transaction: trans,
-            lock: true,
-            skipLocked: true,
-          });
+        const instance = CProduct.getInstance();
+        const data = await instance.checkProductExists(productId);
+        if (data) {
           try {
-            const commitTrans = await trans.commit();
+            const wishlist = await Wishlist.findOrCreate({
+              where: { normal_uid: userId },
+              transaction: trans,
+              lock: true,
+            });
 
-            return true;
+            const wishlistInfo = wishlist[0].toJSON();
+            try {
+              const wishlistProduct = await Product_wishlist.findOrCreate({
+                where: {
+                  product_id: productId,
+                  wishlist_id: wishlistInfo.wishlist_id,
+                },
+                transaction: trans,
+                lock: true,
+                skipLocked: true,
+              });
+              try {
+                const commitTrans = await trans.commit();
+
+                return true;
+              } catch (error: any) {
+                await trans.rollback();
+                throw new Error(error.message);
+              }
+            } catch (error: any) {
+              await trans.rollback();
+              throw new Error(error.message);
+            }
           } catch (error: any) {
             await trans.rollback();
             throw new Error(error.message);
           }
-        } catch (error: any) {
-          await trans.rollback();
-          throw new Error(error.message);
         }
       } catch (error: any) {
-        await trans.rollback();
         throw new Error(error.message);
       }
     } catch (error: any) {
@@ -220,6 +230,144 @@ export default class CUser {
           }
         } catch (error: any) {
           await trans.rollback();
+          throw new Error(error.message);
+        }
+      } catch (error: any) {
+        await trans.rollback();
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async addToCart(
+    productId: number,
+    quantity: number,
+    userId: number
+  ): Promise<boolean> {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+      try {
+        const instance = CProduct.getInstance();
+        const data = await instance.checkProductExists(productId);
+        if (data) {
+          try {
+            const cart = await Cart.findOrCreate({
+              where: { normal_uid: userId },
+              transaction: trans,
+              lock: true,
+            });
+
+            const cartInfo = cart[0].toJSON();
+            try {
+              const cartProduct = await Product_cart.findOrCreate({
+                where: {
+                  product_id: productId,
+                  cart_id: cartInfo.cart_id,
+                },
+                defaults: {
+                  quantity: 0,
+                },
+                transaction: trans,
+                lock: true,
+                skipLocked: true,
+              });
+              cartProduct[0].increment("quantity", { by: quantity });
+              try {
+                const commitTrans = await trans.commit();
+
+                return true;
+              } catch (error: any) {
+                throw new Error(error.message);
+              }
+            } catch (error: any) {
+              throw new Error(error.message);
+            }
+          } catch (error: any) {
+            await trans.rollback();
+            throw new Error(error.message);
+          }
+        }
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async deleteFromCart(productId: number, cartId: number, trans: any) {
+    try {
+      const cartProduct = await Product_cart.destroy({
+        where: {
+          product_id: productId,
+          cart_id: cartId,
+        },
+        transaction: trans,
+      });
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async decreaseFromCart(
+    productId: number,
+    cartId: number,
+    quantity: number,
+    trans: any
+  ) {
+    try {
+      const cartProduct = await Product_cart.decrement("quantity", {
+        by: quantity,
+        where: {
+          product_id: productId,
+          cart_id: cartId,
+        },
+        transaction: trans,
+      });
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async decreaseOrDeleteFromCart(
+    productId: number,
+    optionType: string,
+    userId: number,
+    quantity?: number
+  ): Promise<boolean> {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+
+      try {
+        const cart = await Cart.findOne({
+          where: { normal_uid: userId },
+          transaction: trans,
+          lock: true,
+        });
+
+        const cartInfo = cart.toJSON();
+
+        try {
+          if (optionType === "delete") {
+            await this.deleteFromCart(productId, cartInfo.cart_id, trans);
+          } else if (optionType === "decrease") {
+            await this.decreaseFromCart(
+              productId,
+              cartInfo.cart_id,
+              quantity,
+              trans
+            );
+          }
+          try {
+            const commitTrans = await trans.commit();
+
+            return true;
+          } catch (error: any) {
+            throw new Error(error.message);
+          }
+        } catch (error: any) {
           throw new Error(error.message);
         }
       } catch (error: any) {
