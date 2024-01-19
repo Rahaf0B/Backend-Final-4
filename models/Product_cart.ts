@@ -5,6 +5,7 @@ import {
     ForeignKey,
     DataType,
     BelongsTo,
+    AllowNull,
   } from "sequelize-typescript";
   import Product from "./Product";
 import Cart from "./Cart";
@@ -41,6 +42,13 @@ import Cart from "./Cart";
       onUpdate: "CASCADE",
     })
     declare  cart: Cart;
+
+      
+    @AllowNull(false)
+    @Column({
+      type: DataType.INTEGER,
+    })
+    declare quantity: number;
   }
   export default Product_cart;
   
