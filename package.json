@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "prestart": "npm run build",
+    "build": "rimraf build && npx tsc",
     "start": "tsx watch index",
     "dev": " concurrently \"npx tsc -w\" \"tsx watch index\"  ",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -36,6 +35,7 @@
     "@types/sequelize": "^4.28.19",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^4.18.2",
     "firebase": "^10.7.1",

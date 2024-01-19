@@ -4,79 +4,42 @@ version: 2.1
 orbs:
   node: circleci/node@5
 jobs:
-  test-node:
-    # Install node dependencies and run tests
-    executor: node/default
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Print node install help instructions
-          command: |-
-            echo "One cause for node package install failure is if you have private repositories that it can't reach
-            One way to fix this for private npm packages:
-              1. Use the npm CLI's \"login\" command to create a token (usually saved in your user's \"~/.npmrc\" file)
-                For more info, see https://circleci.com/blog/publishing-npm-packages-using-circleci-2-0/#:~:text=set%20the%20%24npm_token%20environment%20variable%20in%20circleci
-              2. Add a NPM_TOKEN to an org context
-                For info on how to use contexts, see https://circleci.com/docs/contexts/
-              3. Add a .circleci/config.yml to your repository or use this config.yml as a starting template
-              4. Configure the jobs to use the context that includes NPM_TOKEN
-              5. Add a step to inject your NPM_TOKEN environment variable into npm before \"install-packages\"
-                For an example, see https://circleci.com/blog/publishing-npm-packages-using-circleci-2-0/#:~:text=the%20deploy%20job%20has%20several%20steps%20that%20run%20to%20authenticate%20with%20and%20publish%20to"
-          when: on_fail
-      - run:
-          name: Run tests
-          command: echo \"No test specified in package.json\"
-  build-node:
+  build:
     # Build node project
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Print node install help instructions
-          command: |-
-            echo "One cause for node package install failure is if you have private repositories that it can't reach
-            One way to fix this for private npm packages:
-              1. Use the npm CLI's \"login\" command to create a token (usually saved in your user's \"~/.npmrc\" file)
-                For more info, see https://circleci.com/blog/publishing-npm-packages-using-circleci-2-0/#:~:text=set%20the%20%24npm_token%20environment%20variable%20in%20circleci
-              2. Add a NPM_TOKEN to an org context
-                For info on how to use contexts, see https://circleci.com/docs/contexts/
-              3. Add a .circleci/config.yml to your repository or use this config.yml as a starting template
-              4. Configure the jobs to use the context that includes NPM_TOKEN
-              5. Add a step to inject your NPM_TOKEN environment variable into npm before \"install-packages\"
-                For an example, see https://circleci.com/blog/publishing-npm-packages-using-circleci-2-0/#:~:text=the%20deploy%20job%20has%20several%20steps%20that%20run%20to%20authenticate%20with%20and%20publish%20to"
-          when: on_fail
+          cache-path: ~/project/node_modules
+          override-ci-command: npm install
       - run:
           command: npm run build
-      - run:
-          name: Create the ~/artifacts directory if it doesn't exist
-          command: mkdir -p ~/artifacts
-      # Copy output to artifacts dir
-      - run:
-          name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
-      - store_artifacts:
-          path: ~/artifacts
-          destination: node-build
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .
   deploy:
-    # This is an example deploy job, not actually used by the workflow
     docker:
       - image: cimg/base:stable
     steps:
-      # Replace this with steps to deploy to users
+      - attach_workspace:
+          at: ~/project
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: copy files
+          command: scp -o "StrictHostKeyChecking=no" -r ~/project/build $SSH_USER@$SSH_HOST:~/coral-store/
+      - run:
+          name: install dependencies
+          command: ssh -o "StrictHostKeyChecking=no" $SSH_USER@$SSH_HOST "cd ~/coral-store/build && npm install --only=production"
+      - run:
+          name: restart server
+          command: >
+            ssh -o "StrictHostKeyChecking=no" $SSH_USER@$SSH_HOST "cd ~/coral-store/build && pm2 delete coral-store || : && pm2 start index.js --name 'coral-store'"
 workflows:
-  build-and-test:
+  build-and-deploy:
+    when:
+      equal: [ master, << pipeline.git.branch >> ]
     jobs:
-      - test-node
-      - build-node:
+      - build
+      - deploy:
           requires:
-            - test-node
-    # - deploy:
-    #     requires:
-    #       - build-node
+            - build

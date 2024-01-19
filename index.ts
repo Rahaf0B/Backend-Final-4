@@ -6,8 +6,15 @@ import wishListRoutes from './routes/wishlist';
 import orderRoutes from './routes/order';
 import authRoutes from './routes/user';
 import './conections/sequelizeConnection'
+var cors = require('cors');
+
 
 const app = express();
+app.use(cors({"Access-Control-Allow-Origin": "*",
+credentials: true,
+"Access-Control-Allow-Credentials": true
+
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
