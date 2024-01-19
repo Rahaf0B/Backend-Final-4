@@ -8,7 +8,6 @@
     "start": "tsx watch index",
     "dev": " concurrently \"npx tsc -w\" \"tsx watch index\"  ",
     "test": "echo \"Error: no test specified\" && exit 1"
-    
   },
   "keywords": [],
   "author": "",
@@ -25,7 +24,7 @@
     "@types/uuid": "^9.0.7",
     "@types/validator": "^13.11.7",
     "concurrently": "^8.2.2",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.3.2",
     "nodemon": "^3.0.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.7.0",
@@ -55,6 +54,7 @@
     "sequelize-typescript": "^2.1.6",
     "uuid": "^9.0.1",
     "uuidv4": "^6.2.13",
+    "validator": "^13.11.0",
     "yup": "^1.3.3"
   }
 }
