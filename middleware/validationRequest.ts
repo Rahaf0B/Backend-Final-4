@@ -1,4 +1,4 @@
-import { object, string, number, date, mixed, lazy, } from "yup";
+import { object, string, number, date, mixed, lazy } from "yup";
 import { Request, Response, NextFunction, query } from "express";
 import { parse } from "date-fns";
 
@@ -117,10 +117,10 @@ async function validateGetByCategory(
         .required("The number_of_items is required"),
 
       category_id: number()
-      .typeError("category_id must be a number")
-      .integer(" enter a valid number")
-      .nullable()
-      .required("The category_id is required"),
+        .typeError("category_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The category_id is required"),
     }).noUnknown(true),
   });
 
@@ -155,10 +155,10 @@ async function validateGetByBrand(
         .required("The number_of_items is required"),
 
       brand_id: number()
-      .typeError("brand_id must be a number")
-      .integer(" enter a valid number")
-      .nullable()
-      .required("The brand_id is required"),
+        .typeError("brand_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The brand_id is required"),
     }).noUnknown(true),
   });
 
@@ -232,8 +232,6 @@ async function validateTextSearch(
     }).noUnknown(true),
   });
 
-
-  
   try {
     const response = await validateSchema.validate({
       query: req.query,
@@ -243,7 +241,6 @@ async function validateTextSearch(
     return res.status(400).send(e.message);
   }
 }
-
 
 async function validateCategoryBrandID(
   req: Request,
@@ -277,7 +274,6 @@ async function validateCategoryBrandID(
   }
 }
 
-
 async function validateProductId(
   req: Request,
   res: Response,
@@ -290,7 +286,6 @@ async function validateProductId(
         .integer(" enter a valid number")
         .nullable()
         .required("The page_number is required"),
-  
     }).noUnknown(true),
   });
 
@@ -303,8 +298,6 @@ async function validateProductId(
     return res.status(400).send(e.message);
   }
 }
-
-
 
 async function validatePopularDiscount(
   req: Request,
@@ -326,11 +319,12 @@ async function validatePopularDiscount(
         .nullable()
         .required("The number_of_items is required"),
 
-      value: number().round( 'floor')
-      .typeError("value must be a number")
-      .integer(" enter a valid number")
-      .nullable()
-      .required("The value is required"),
+      value: number()
+        .round("floor")
+        .typeError("value must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The value is required"),
     }).noUnknown(true),
   });
 
@@ -343,9 +337,6 @@ async function validatePopularDiscount(
     return res.status(400).send(e.message);
   }
 }
-
-
-
 
 async function validateWishlist(
   req: Request,
@@ -354,14 +345,11 @@ async function validateWishlist(
 ) {
   let validateSchema = object({
     query: object({
-     
-
       product_id: number()
         .typeError("product_id must be a number")
         .integer(" enter a valid number")
         .nullable()
         .required("The product_id is required"),
-
     }).noUnknown(true),
   });
 
@@ -375,8 +363,98 @@ async function validateWishlist(
   }
 }
 
+async function validateCart(req: Request, res: Response, next: NextFunction) {
+  let validateSchema = object({
+    body: object({
+      product_id: number()
+        .typeError("product_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The product_id is required"),
 
+      quantity: number()
+        .typeError("quantity must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The quantity is required")
+        .min(1, "The quantity must be 1 or above"),
+    })
+      .required("The product_id and quantity are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
 
+  try {
+    const response = await validateSchema.validate({
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+async function validateDeleteFromCart(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      product_id: number()
+        .typeError("product_id must be a number")
+        .integer("enter a valid number")
+        .nullable()
+        .required("The product_id is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+async function validateDecreaseFromCart(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    body: object({
+      product_id: number()
+        .typeError("product_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The product_id is required"),
+
+      quantity: number()
+        .typeError("quantity must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The quantity is required")
+        .min(1, "The quantity must be 1 or above"),
+    })
+      .required("The product_id and quantity are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
 
 export default {
   UserCreateAccountValidation,
@@ -389,4 +467,7 @@ export default {
   validateCategoryBrandID,
   validatePopularDiscount,
   validateWishlist,
+  validateCart,
+  validateDeleteFromCart,
+  validateDecreaseFromCart,
 };

@@ -123,5 +123,3 @@ export interface ICart{
   cart_id?: number;
   normal_uid: number;
 }
-
-

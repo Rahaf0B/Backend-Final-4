@@ -21,8 +21,6 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 const sequelize = new Sequelize({
-  database: dbConfig.DB,
-const sequelize = new Sequelize({
   database: process.env.DB,
 
   username: process.env.USER,
@@ -37,7 +35,7 @@ sequelize
   .authenticate()
   .then(() => {
     console.log("Connection has been established successfully.");
-    //sequelize.sync();//{ alter: true , force: false }
+    sequelize.sync();//{ alter: true , force: false }
   })
   .catch((error) => {
     console.error("Unable to connect to the database:", error);

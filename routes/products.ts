@@ -274,21 +274,9 @@ router.get("/ratings/:product_id", async (req: Request, res: Response) => {
       dataInfo: dataInfo,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+   
+    res.status(500).end();
   }
 });
-//getProductById
-router.get("/:id",(req: Request,res:Response)=>{
-  try {
-    const productId = req.params.id;
-    res.status(200).send({
-      function: "getProductById",
-      pageNumber: productId,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+
 export default router;
