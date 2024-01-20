@@ -1,9 +1,7 @@
 node_modules
 build
-package.json
-package-lock.jsons
 .env
 db.config.ts
+.env
 dist
 test-http
-sequelizeConnection.ts
