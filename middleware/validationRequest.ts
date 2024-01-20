@@ -473,5 +473,5 @@ export default {
 
 };
 
-};
+
 
