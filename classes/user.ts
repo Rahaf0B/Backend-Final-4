@@ -1,10 +1,13 @@
 // import { auth } from "../firebaseConfig";
-import { IUser } from "../interfaces/objInterfaces";
+import { IUser, IWishlist } from "../interfaces/objInterfaces";
 import Session from "../models/Session";
 import User from "../models/User";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import { NUMBER } from "sequelize";
+import Wishlist from "../models/Wishlist";
+import Product_wishlist from "../models/product_wishlist";
+import sequelizeConnection from "../conections/sequelizeConnection";
 
 export default class CUser {
   private static instance: CUser;
@@ -136,6 +139,95 @@ export default class CUser {
           cause: "Validation Error",
         });
       } else throw new Error(e);
+    }
+  }
+
+  async addToWishlist(productId: number, userId: number): Promise<boolean> {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+
+      try {
+        const wishlist = await Wishlist.findOrCreate({
+          where: { normal_uid: userId },
+          transaction: trans,
+          lock: true,
+        });
+
+        const wishlistInfo = wishlist[0].toJSON();
+        try {
+          const wishlistProduct = await Product_wishlist.findOrCreate({
+            where: {
+              product_id: productId,
+              wishlist_id: wishlistInfo.wishlist_id,
+            },
+            transaction: trans,
+            lock: true,
+            skipLocked: true,
+          });
+          try {
+            const commitTrans = await trans.commit();
+
+            return true;
+          } catch (error: any) {
+            await trans.rollback();
+            throw new Error(error.message);
+          }
+        } catch (error: any) {
+          await trans.rollback();
+          throw new Error(error.message);
+        }
+      } catch (error: any) {
+        await trans.rollback();
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async deleteFromWishlist(
+    productId: number,
+    userId: number
+  ): Promise<boolean> {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+      try {
+        const wishlist = await Wishlist.findOne({
+          where: {
+            normal_uid: userId,
+          },
+          transaction: trans,
+          lock: true,
+          skipLocked: true,
+        });
+        try {
+          const wishlistDeletedProduct = await Product_wishlist.destroy({
+            transaction: trans,
+            where: {
+              product_id: productId,
+
+              wishlist_id: wishlist.wishlist_id,
+            },
+          });
+
+          try {
+            const commitTrans = await trans.commit();
+
+            return true;
+          } catch (error: any) {
+            await trans.rollback();
+            throw new Error(error.message);
+          }
+        } catch (error: any) {
+          await trans.rollback();
+          throw new Error(error.message);
+        }
+      } catch (error: any) {
+        await trans.rollback();
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
     }
   }
 }

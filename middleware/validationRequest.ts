@@ -344,6 +344,40 @@ async function validatePopularDiscount(
   }
 }
 
+
+
+
+async function validateWishlist(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+     
+
+      product_id: number()
+        .typeError("product_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The product_id is required"),
+
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -354,4 +388,5 @@ export default {
   validateProductId,
   validateCategoryBrandID,
   validatePopularDiscount,
+  validateWishlist,
 };

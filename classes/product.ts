@@ -839,10 +839,12 @@ export default class CProduct {
     }
   }
 
+
   async checkProductExists(product_id: number) {
     try {
       const data = await Product.findByPk(product_id);
       return data;
     } catch (e: any) {}
   }
+
 }
