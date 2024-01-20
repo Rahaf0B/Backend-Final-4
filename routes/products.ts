@@ -264,16 +264,18 @@ router.get(
 );
 
 //getProductsRatings
-router.get("/ratings/:product_id", (req: Request, res: Response) => {
+router.get("/ratings/:product_id", async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.product_id);
+    const productId = Number(req.params.product_id);
+    const instance = CProduct.getInstance();
+    const dataInfo = await instance?.getProductRatings(productId);
     res.status(200).send({
       function: "getProductsRatings",
-      Id: id,
+      dataInfo: dataInfo,
     });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+   
+    res.status(500).end();
   }
 });
 

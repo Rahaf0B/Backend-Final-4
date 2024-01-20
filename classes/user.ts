@@ -8,9 +8,11 @@ import { NUMBER } from "sequelize";
 import Wishlist from "../models/Wishlist";
 import Product_wishlist from "../models/product_wishlist";
 import sequelizeConnection from "../conections/sequelizeConnection";
+
 import Cart from "../models/Cart";
 import Product_cart from "../models/Product_cart";
 import CProduct from "./product";
+
 
 export default class CUser {
   private static instance: CUser;
@@ -148,6 +150,7 @@ export default class CUser {
   async addToWishlist(productId: number, userId: number): Promise<boolean> {
     try {
       const trans = await sequelizeConnection.sequelize.transaction();
+
       try {
         const instance = CProduct.getInstance();
         const data = await instance.checkProductExists(productId);
@@ -182,12 +185,46 @@ export default class CUser {
               await trans.rollback();
               throw new Error(error.message);
             }
+
+
+      try {
+        const wishlist = await Wishlist.findOrCreate({
+          where: { normal_uid: userId },
+          transaction: trans,
+          lock: true,
+        });
+
+        const wishlistInfo = wishlist[0].toJSON();
+        try {
+          const wishlistProduct = await Product_wishlist.findOrCreate({
+            where: {
+              product_id: productId,
+              wishlist_id: wishlistInfo.wishlist_id,
+            },
+            transaction: trans,
+            lock: true,
+            skipLocked: true,
+          });
+          try {
+            const commitTrans = await trans.commit();
+
+            return true;
+
           } catch (error: any) {
             await trans.rollback();
             throw new Error(error.message);
           }
+
         }
       } catch (error: any) {
+
+        } catch (error: any) {
+          await trans.rollback();
+          throw new Error(error.message);
+        }
+      } catch (error: any) {
+        await trans.rollback();
+
         throw new Error(error.message);
       }
     } catch (error: any) {
@@ -240,6 +277,7 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
+
 
   async addToCart(
     productId: number,
@@ -378,4 +416,5 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
+
 }

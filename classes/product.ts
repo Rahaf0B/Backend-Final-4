@@ -13,6 +13,8 @@ import Brand from "../models/Brand";
 import Category from "../models/Category";
 import uFuzzy from "@leeoniya/ufuzzy";
 import FuzzySearch from "fuzzy-search";
+import Normal_User from "../models/Normal_user";
+import User from "../models/User";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -796,4 +798,29 @@ export default class CProduct {
       return data;
     } catch (e: any) {}
   }
+
+
+  async getProductRatings(productId: number) {
+
+    let ratings = await Rating.findAll({
+      where: { product_id: productId },
+      include: {
+        model: Normal_User,
+        attributes: ["normal_uid"],//do not edit
+        where: { 
+          normal_uid: Sequelize.col('Rating.normal_uid') },
+        include: [
+          {
+          model: User,
+          attributes: ["uid", "first_name", "last_name"],
+          where: {
+             uid: Sequelize.col('Rating.normal_uid') },
+        }],
+      },
+    });
+
+    return ratings;
+  }
+  
+
 }
