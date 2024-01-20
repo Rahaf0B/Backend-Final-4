@@ -20,7 +20,7 @@ import Session from "../models/Session";
 import dotenv from 'dotenv'
 dotenv.config();
 
-/*const sequelize = new Sequelize({
+const sequelize = new Sequelize({
   database: dbConfig.DB,
 const sequelize = new Sequelize({
   database: process.env.DB,
@@ -30,18 +30,8 @@ const sequelize = new Sequelize({
   host: process.env.Host,
   port: 3306,
   dialect: "mysql",
-});*/
-const sequelize = new Sequelize(
-  "finaldp", 
-  "root", 
-  "", {
-  host: "localhost",
-  dialect: "mysql",
-  pool: {
-    max: 10,
-    min: 1,
-  }
 });
+
 sequelize.addModels([Address,Admin,Brand,Cart,Category,Discount,Image,Normal_User,Order_item,Order,Product_cart,Product_discount,Product_wishlist,Product,Rating,Session,User,Wishlist]);
 sequelize
   .authenticate()
