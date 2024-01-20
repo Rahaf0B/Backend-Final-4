@@ -470,8 +470,4 @@ export default {
   validateCart,
   validateDeleteFromCart,
   validateDecreaseFromCart,
-
 };
-
-};
-
