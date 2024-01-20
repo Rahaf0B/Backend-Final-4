@@ -15,7 +15,6 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.6",
-    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/fuzzy-search": "^2.1.5",
     "@types/node": "^20.10.5",
@@ -29,6 +28,7 @@
   },
   "dependencies": {
     "@leeoniya/ufuzzy": "^1.0.14",
+    "@types/dotenv": "^8.2.0",
     "@types/sequelize": "^4.28.19",
     "bcrypt": "^5.1.1",
     "concurrently": "^8.2.2",
