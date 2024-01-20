@@ -1,3 +1,0 @@
-#### works
-get http://localhost:3000/order/1
-Authorization: myTokenGoesHere

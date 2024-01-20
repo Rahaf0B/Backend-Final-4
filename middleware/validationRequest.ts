@@ -1,4 +1,4 @@
-import { object, string, number, date, mixed, lazy } from "yup";
+import { object, string, number, date, mixed, lazy, } from "yup";
 import { Request, Response, NextFunction, query } from "express";
 import { parse } from "date-fns";
 
@@ -101,7 +101,7 @@ async function validateGetByCategory(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       page_number: number()
         .typeError("page_number must be a number")
@@ -116,31 +116,16 @@ async function validateGetByCategory(
         .nullable()
         .required("The number_of_items is required"),
 
-      category: lazy((value: any) => {
-        if (value === null) {
-          return mixed().nullable();
-        } else if (typeof value === "number") {
-          return number().required("The category is required");
-        } else if (typeof value === "string") {
-          return string()
-            .required("The category is required")
-            .matches(
-              /^[ a-zA-Z0-9@]+$/,
-              "This category contain special character"
-            );
-        }
-
-        return mixed().test(
-          "invalidType",
-          "Invalid category value type",
-          (value) => false
-        );
-      }),
+      category_id: number()
+      .typeError("category_id must be a number")
+      .integer(" enter a valid number")
+      .nullable()
+      .required("The category_id is required"),
     }).noUnknown(true),
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -154,7 +139,7 @@ async function validateGetByBrand(
   res: Response,
   next: NextFunction
 ) {
-  let IDParamsSchema = object({
+  let validateSchema = object({
     query: object({
       page_number: number()
         .typeError("page_number must be a number")
@@ -169,31 +154,188 @@ async function validateGetByBrand(
         .nullable()
         .required("The number_of_items is required"),
 
-      brand: lazy((value: any) => {
-        if (value === null) {
-          return mixed().nullable();
-        } else if (typeof value === "number") {
-          return number().required("The brand is required");
-        } else if (typeof value === "string") {
-          return string()
-            .required("The brand is required")
-            .matches(
-              /^[ a-zA-Z0-9@]+$/,
-              "This brand cannot contain special character"
-            );
-        }
-
-        return mixed().test(
-          "invalidType",
-          "Invalid brand value type",
-          (value) => false
-        );
-      }),
+      brand_id: number()
+      .typeError("brand_id must be a number")
+      .integer(" enter a valid number")
+      .nullable()
+      .required("The brand_id is required"),
     }).noUnknown(true),
   });
 
   try {
-    const response = await IDParamsSchema.validate({
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+async function validatePageAndItemNumber(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(0, "The page_number must be 0 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+async function validateTextSearch(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      search_value: string()
+        .strict(true)
+        .typeError("The Last Name Should be String")
+        .nullable()
+        .required("The Last Name is required"),
+
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required"),
+    }).noUnknown(true),
+  });
+
+
+  
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+async function validateCategoryBrandID(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      category_id: number()
+        .typeError("category_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The category_id is required")
+        .min(1, "The category_id must be 1 or above"),
+
+      brand_id: number()
+        .typeError("brand_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The brand_id is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+async function validateProductId(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    params: object({
+      product_id: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required"),
+  
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      params: req.params,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+
+async function validatePopularDiscount(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required"),
+
+      value: number().round( 'floor')
+      .typeError("value must be a number")
+      .integer(" enter a valid number")
+      .nullable()
+      .required("The value is required"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
       query: req.query,
     });
     next();
@@ -207,4 +349,9 @@ export default {
   UserLoginValidation,
   validateGetByCategory,
   validateGetByBrand,
+  validatePageAndItemNumber,
+  validateTextSearch,
+  validateProductId,
+  validateCategoryBrandID,
+  validatePopularDiscount,
 };

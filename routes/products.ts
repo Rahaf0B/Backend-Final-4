@@ -10,6 +10,7 @@ router.use(cookieParser());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
+
 //getAllProducts
 router.get("/products", (req: Request, res: Response) => {
   try {
@@ -27,16 +28,21 @@ router.get("/products", (req: Request, res: Response) => {
 });
 
 //getMostPopulurProducts
-router.get("/popular", (req: Request, res: Response) => {
+router.get("/popular",  authorization.checkExistSession,
+validate.validatePopularDiscount ,async (req: Request, res: Response) => {
   try {
     const page_number = Number(req.query.page_number);
-    res.status(200).send({
-      function: "getMostPopulurProducts",
-      page_number: page_number,
-    });
+    const instance = CProduct.getInstance();
+    const [dataInfo, countData] = await instance.popularAndDiscountProducts(
+      Number(req.query.page_number),
+      Number(req.query.number_of_items),
+      "rating",
+      req.uid,
+      Number(req.query.value)
+    );
+    res.status(200).send({ items_count: countData, items: dataInfo });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).end();
   }
 });
 
@@ -52,11 +58,10 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items),
         req.uid,
-        Number(req.query.category) ? "category_id" : "name",
-        Number(req.query.category)
-          ? Number(req.query.category)
-          : req.query.category.toString()
+        Number(req.query.category_id),
+        ...[,]
       );
+
       res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (e: any) {
       res.status(500).end();
@@ -76,10 +81,8 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items),
         req.uid,
-        Number(req.query.brand) ? "brand_id" : "name",
-        Number(req.query.brand)
-          ? Number(req.query.brand)
-          : req.query.brand.toString()
+        ...[,],
+        Number(req.query.brand_id)
       );
 
       res.status(200).send({ items_count: countData, items: dataInfo });
@@ -93,6 +96,7 @@ router.get(
 router.get(
   "/new-arrival",
   authorization.checkExistSession,
+  validate.validatePageAndItemNumber,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
@@ -109,17 +113,26 @@ router.get(
 );
 
 //getHandpickedProducts
-router.get("/handpicked-products", (req: Request, res: Response) => {
-  try {
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getHandpickedProducts",
-      pageNumber: pageNumber,
-    });
-  } catch (error) {
-    res.status(500).end();
+router.get(
+  "/handpicked-products",
+  authorization.checkExistSession,
+  validate.validateGetByCategory,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const [dataInfo, countData] = await instance.handPickedProducts(
+        Number(req.query.page_number),
+        Number(req.query.number_of_items),
+        req.uid,
+        Number(req.query.category_id)
+      );
+
+      res.status(200).send({ items_count: countData, items: dataInfo });
+    } catch (error) {
+      res.status(500).end();
+    }
   }
-});
+);
 
 //getHandpickedCategories
 router.get(
@@ -153,13 +166,14 @@ router.get("/category/handpicked", (req: Request, res: Response) => {
 });
 
 //getLimitedEditionProducts
-router.get("/limited-edition", (req: Request, res: Response) => {
+router.get("/limited-edition",authorization.checkExistSession,
+validate.validatePageAndItemNumber, async (req: Request, res: Response) => {
   try {
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getLimitedEditionProducts",
-      pageNumber: pageNumber,
-    });
+    const instance = CProduct.getInstance();
+    const [dataInfo,countData]=await instance.limitedEditionProducts(Number(req.query.page_number),
+    Number(req.query.number_of_items),req.uid);
+    res.status(200).send({ items_count: countData, items: dataInfo });
+
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -167,64 +181,87 @@ router.get("/limited-edition", (req: Request, res: Response) => {
 });
 
 //getDiscountedProducts
-router.get("/discount-edition", (req: Request, res: Response) => {
+router.get("/discount-edition",  authorization.checkExistSession,
+validate.validatePopularDiscount ,async (req: Request, res: Response) => {
   try {
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getDiscountedProducts",
-      pageNumber: pageNumber,
-    });
+    const instance = CProduct.getInstance();
+    const [dataInfo, countData] = await instance.popularAndDiscountProducts(
+      Number(req.query.page_number),
+      Number(req.query.number_of_items),
+      "discount",
+      req.uid,
+      Number(req.query.value)
+    );
+    res.status(200).send({ items_count: countData, items: dataInfo });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).end();
   }
 });
 
 //getProductsByTextSearch
-router.get("/search", (req: Request, res: Response) => {
-  try {
-    const searchValue = req.query.search_value;
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getProductsByTextSearch",
-      searchValue: searchValue,
-      pageNumber: pageNumber,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/search",
+  authorization.checkExistSession,
+  validate.validateTextSearch,
+  async (req: Request, res: Response) => {
+    try {
+      const searchValue = req.query.search_value;
+      const pageNumber = req.query.page_number;
+
+      const instance = CProduct.getInstance();
+      const [dataInfo, countData] = await instance.search(
+        req.query.search_value.toString(),
+        Number(req.query.page_number),
+        Number(req.query.number_of_items),
+        req.uid
+      );
+      res.status(200).send({ items_count: countData, items: dataInfo });
+    } catch (error) {
+      res.status(500).end();
+    }
   }
-});
+);
 
 //getProductsById
-router.get("/single-product/:product_id", (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.product_id);
-    res.status(200).send({
-      function: "getProductsById",
-      Id: id,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/single-product/:product_id",
+  authorization.checkExistSession,
+  validate.validateProductId,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const data = await instance.getSingleProduct(
+        Number(req.params.product_id)
+      );
+      res.status(200).send(data);
+    } catch (error) {
+      res.status(500).end();
+    }
   }
-});
+);
 
 //get5RelatedProducts
-router.get("/related/:brand_id/:category_id", (req: Request, res: Response) => {
-  try {
-    const prandId = Number(req.params.brand_id);
-    const categoryId = Number(req.params.category_id);
-    res.status(200).send({
-      function: "get5RelatedProducts",
-      prandId: prandId,
-      categoryId: categoryId,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/related_product",
+  authorization.checkExistSession,
+  validate.validateCategoryBrandID,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const [dataInfo, countData] = await instance?.filterProductByCoB(
+        ...[,],
+        ...[,],
+        req.uid,
+        Number(req.query.category_id),
+        Number(req.query.brand_id)
+      );
+
+      res.status(200).send({ items_count: countData, items: dataInfo });
+    } catch (error) {
+      res.status(500).end();
+    }
   }
-});
+);
 
 //getProductsRatings
 router.get("/ratings/:product_id", async (req: Request, res: Response) => {
