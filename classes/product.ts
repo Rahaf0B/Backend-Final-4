@@ -10,6 +10,9 @@ import Rating from "../models/Rating";
 import Discount from "../models/Discount";
 import { appCache, getCacheValue } from "../appCache";
 import Brand from "../models/Brand";
+import { join } from "path";
+import Normal_User from "../models/Normal_user";
+import User from "../models/User";
 import Category from "../models/Category";
 import uFuzzy from "@leeoniya/ufuzzy";
 import FuzzySearch from "fuzzy-search";
@@ -33,7 +36,7 @@ export default class CProduct {
     "discount.discount_id",
   ];
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): CProduct {
     if (CProduct.instance) {
@@ -115,6 +118,18 @@ export default class CProduct {
         {
           model: Wishlist,
           required: false,
+          attributes: [
+            [
+              Sequelize.fn(
+                "SUM",
+                Sequelize.literal(
+                  `DISTINCT CASE WHEN wishlist.normal_uid = ${userId ? userId : 0
+                  } THEN 1 ELSE 0 END`
+                )
+              ),
+              "is_liked",
+            ],
+          ],
           attributes: [],
           subQuery: false,
         },
@@ -216,6 +231,18 @@ export default class CProduct {
         {
           model: Wishlist,
           required: false,
+          attributes: [
+            [
+              Sequelize.fn(
+                "SUM",
+                Sequelize.literal(
+                  `DISTINCT CASE WHEN wishlist.normal_uid = ${userId ? userId : 0
+                  } THEN 1 ELSE 0 END`
+                )
+              ),
+              "is_liked",
+            ],
+          ],
           attributes: [],
           subQuery: false,
         },
@@ -276,6 +303,27 @@ export default class CProduct {
     }
   }
 
+  async getProductRatings(productId: number) {
+
+    let ratings = await Rating.findAll({
+      where: { product_id: productId },
+      include: {
+        model: Normal_User,
+        attributes: ["normal_uid"],//do not edit
+        where: { 
+          normal_uid: Sequelize.col('Rating.normal_uid') },
+        include: [
+          {
+          model: User,
+          attributes: ["uid", "first_name", "last_name"],
+          where: {
+             uid: Sequelize.col('Rating.normal_uid') },
+        }],
+      },
+    });
+
+    return ratings;
+  }
   async getCategory(): Promise<ICategory[]> {
     try {
       let data;
