@@ -799,6 +799,7 @@ export default class CProduct {
     } catch (e: any) {}
   }
 
+
   async getProductRatings(productId: number) {
 
     let ratings = await Rating.findAll({
@@ -821,4 +822,5 @@ export default class CProduct {
     return ratings;
   }
   
+
 }
