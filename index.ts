@@ -6,10 +6,13 @@ import wishListRoutes from './routes/wishlist';
 import orderRoutes from './routes/order';
 import authRoutes from './routes/user';
 import './conections/sequelizeConnection'
+import './middleware/imageuploader';
 var cors = require('cors');
 
 
 const app = express();
+app.use(express.json())
+app.use(express.urlencoded({extended: false}))
 app.use(cors({"Access-Control-Allow-Origin": "*",
 credentials: true,
 "Access-Control-Allow-Credentials": true
@@ -25,6 +28,13 @@ app.use('/cart',cartRoutes);
 app.use('/wishlist',wishListRoutes);
 app.use('/order',orderRoutes);
 app.use('/auth',authRoutes);
+
+app.use(express.static(__dirname + '/public'));
+app.use('/images/product', express.static('images/product'));
+app.use('/images/brand', express.static('images/brand'));
+app.use('/images/category', express.static('images/category'));
+app.use('/images/user', express.static('images/user'));
+
 
 app.use(async (req:any, res:any, next:any)=>{ 
   res.status(404).send({message:"Not Found"});
