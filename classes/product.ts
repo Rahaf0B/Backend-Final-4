@@ -812,7 +812,7 @@ export default class CProduct {
         include: [
           {
             model: User,
-            attributes: ["uid", "first_name", "last_name"],
+            attributes: ["first_name", "last_name"],
             where: {
               uid: Sequelize.col("Rating.normal_uid"),
             },
@@ -823,7 +823,6 @@ export default class CProduct {
             required: false,
             nested: true,
             attributes: ["image_id", "name", "url"],
-            where: { type: { [Op.eq]: 0 }, },
             subQuery: false,
           },
         ],
@@ -833,7 +832,7 @@ export default class CProduct {
     return ratings;
   }
 
-  async getProductsInWishlist(userId: number, page_number: number) {
+  async getProductsInWishlist(userId: number, pageNumber: number,numberOfItems:number) {
     const items_count: number = await product_wishlist.count({
       include: [
         {
@@ -847,10 +846,21 @@ export default class CProduct {
       attributes: ["wishlist_id"],
       where: { normal_uid: userId },
     });
+    console.log(wishlistId.dataValues);
+    const data=await product_wishlist.findAll(
+      {where:{wishlist_id:wishlistId.dataValues.wishlist_id},}
+
+    );
+   // console.log(data);
+    const product_id_all=data.map((value)=>value.dataValues.product_id);
+    console.log(product_id_all);
     const items = await Product.findAll({
+      where:{
+        product_id:{[Op.in]:product_id_all},
+      },
       subQuery: false,
-      offset: ((page_number - 1) * 20)+1,
-      limit: 20,
+      offset: ((pageNumber - 1) * numberOfItems),
+      limit: numberOfItems,
       attributes: [
         "product_id",
         "name",
@@ -889,7 +899,6 @@ export default class CProduct {
           model: Wishlist,
           required: false,
           attributes: [],
-          where:{wishlist_id:wishlistId.dataValues.wishlist_id},
           subQuery: false,
         },
         {

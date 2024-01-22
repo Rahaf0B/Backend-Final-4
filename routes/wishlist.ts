@@ -12,21 +12,23 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 //addToWishlist
-router.post("/",
-authorization.authenticateUser,
-  validate.validateWishlist, 
+router.post(
+  "/",
+  authorization.authenticateUser,
+  validate.validateWishlist,
   async (req: Request, res: Response) => {
-  try {
-    const instance = CUser.getInstance();
-    const status = await instance.addToWishlist(
-      Number(req.query.product_id),
-      req.uid
-    );
-    res.status(200).send(status);
-  } catch (error: any) {
-    res.status(500).end();
+    try {
+      const instance = CUser.getInstance();
+      const status = await instance.addToWishlist(
+        Number(req.query.product_id),
+        req.uid
+      );
+      res.status(200).send(status);
+    } catch (error: any) {
+      res.status(500).end();
+    }
   }
-});
+);
 
 router.delete(
   "/",
@@ -48,14 +50,15 @@ router.delete(
 
 router.get("/products",
 authorization.authenticateUser,
-validate.validatePageNumber,
+validate.validatePageAndItemNumber,
 
 async (req: Request, res: Response) =>{
   try {
     const instance = CProduct.getInstance();
    const status = await instance.getProductsInWishlist(
       req.uid,
-      Number(req.query.page_number)
+      Number(req.query.page_number),
+      Number(req.query.number_of_items)
     );
     res.status(200).send(status);
   } catch (error: any) {
