@@ -29,6 +29,7 @@
   "dependencies": {
     "@leeoniya/ufuzzy": "^1.0.14",
     "@types/dotenv": "^8.2.0",
+    "@types/multer": "^1.4.11",
     "@types/sequelize": "^4.28.19",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
