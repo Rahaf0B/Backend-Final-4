@@ -15,6 +15,7 @@ import uFuzzy from "@leeoniya/ufuzzy";
 import FuzzySearch from "fuzzy-search";
 import Normal_User from "../models/Normal_user";
 import User from "../models/User";
+import product_wishlist from "../models/product_wishlist";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -799,28 +800,122 @@ export default class CProduct {
     } catch (e: any) {}
   }
 
-
   async getProductRatings(productId: number) {
-
     let ratings = await Rating.findAll({
       where: { product_id: productId },
       include: {
         model: Normal_User,
-        attributes: ["normal_uid"],//do not edit
-        where: { 
-          normal_uid: Sequelize.col('Rating.normal_uid') },
+        attributes: ["normal_uid"], //do not edit
+        where: {
+          normal_uid: Sequelize.col("Rating.normal_uid"),
+        },
         include: [
           {
-          model: User,
-          attributes: ["uid", "first_name", "last_name"],
-          where: {
-             uid: Sequelize.col('Rating.normal_uid') },
-        }],
+            model: User,
+            attributes: ["first_name", "last_name"],
+            where: {
+              uid: Sequelize.col("Rating.normal_uid"),
+            },
+            
+          },
+          {
+            model: Image,
+            required: false,
+            nested: true,
+            attributes: ["image_id", "name", "url"],
+            subQuery: false,
+          },
+        ],
       },
     });
 
     return ratings;
   }
-  
 
+  async getProductsInWishlist(userId: number, pageNumber: number,numberOfItems:number) {
+    const items_count: number = await product_wishlist.count({
+      include: [
+        {
+          model: Wishlist,
+          attributes: [],
+          where: { normal_uid: userId },
+        },
+      ],
+    });
+    const wishlistId = await Wishlist.findOne({
+      attributes: ["wishlist_id"],
+      where: { normal_uid: userId },
+    });
+    console.log(wishlistId.dataValues);
+    const data=await product_wishlist.findAll(
+      {where:{wishlist_id:wishlistId.dataValues.wishlist_id},}
+
+    );
+   // console.log(data);
+    const product_id_all=data.map((value)=>value.dataValues.product_id);
+    console.log(product_id_all);
+    const items = await Product.findAll({
+      where:{
+        product_id:{[Op.in]:product_id_all},
+      },
+      subQuery: false,
+      offset: ((pageNumber - 1) * numberOfItems),
+      limit: numberOfItems,
+      attributes: [
+        "product_id",
+        "name",
+        "sub_title",
+        "price",
+        "quantity",
+        "description",
+        "category_id",
+        "brand_id",
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              `DISTINCT CASE WHEN wishlist.normal_uid = ${
+                userId ? userId : 0
+              } THEN 1 ELSE 0 END`
+            )
+          ),
+          "is_liked",
+        ],
+        [this.countProductRating, "number_of_ratings"],
+        [this.avgProductRating, "ratings"],
+        [this.discountProduct, "discount_value"],
+      ],
+      
+      include: [
+        {
+          model: Image,
+          required: false,
+          nested: true,
+          attributes: ["image_id", "name", "url"],
+          where: { type: { [Op.eq]: 1 } },
+          subQuery: false,
+        },
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Rating,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Discount,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+      ],
+      group: this.groupByProductQuery,
+      order: [["product_id","ASC"]],
+    });
+    return { items_count, items };
+  }
 }
