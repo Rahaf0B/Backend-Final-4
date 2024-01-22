@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import CUser from "../classes/user";
 import authorization from "../middleware/authorization";
 import validate from "../middleware/validationRequest";
+import CProduct from "../classes/product";
 const router = Router();
 
 router.use(cookieParser());
@@ -11,7 +12,10 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 //addToWishlist
-router.post("/", async (req: Request, res: Response) => {
+router.post("/",
+authorization.authenticateUser,
+  validate.validateWishlist, 
+  async (req: Request, res: Response) => {
   try {
     const instance = CUser.getInstance();
     const status = await instance.addToWishlist(
@@ -40,5 +44,23 @@ router.delete(
       res.status(500).end();
     }
   }
+);
+
+router.get("/products",
+authorization.authenticateUser,
+validate.validatePageNumber,
+
+async (req: Request, res: Response) =>{
+  try {
+    const instance = CProduct.getInstance();
+   const status = await instance.getProductsInWishlist(
+      req.uid,
+      Number(req.query.page_number)
+    );
+    res.status(200).send(status);
+  } catch (error: any) {
+    res.status(500).end();
+  }
+}
 );
 export default router;
