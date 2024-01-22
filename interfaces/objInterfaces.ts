@@ -8,14 +8,16 @@ export interface IUser {
 }
 
 export interface IAdmin {
-  admin_uid:  number;
+  admin_uid?:  number;
+  uid?:number;
 }
 
 export interface INormal_user {
-  normal_uid: number;
+  normal_uid?: number;
   date_of_birth?: Date | string;
   phone_number?: number;
   image_id?: IImage;
+  uid?:number;
 }
 
 export interface IImage {

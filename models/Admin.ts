@@ -18,19 +18,21 @@ import User from "./User";
   modelName: "Admin",
 })
 class Admin extends Model<IAdmin> implements IAdmin {
-  @ForeignKey(() => User)
   @AllowNull(false)
   @PrimaryKey
+  @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
+    field: "admin_uid",
   })
-  declare admin_uid: number;
-  @BelongsTo(() => User, { 
+  uid?: number;
+
+  @BelongsTo(() => User, {
     foreignKey: "uid",
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
   })
- declare user: User;
+  user: User;
 }
 
 export default Admin;

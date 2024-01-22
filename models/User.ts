@@ -100,10 +100,10 @@ class User extends Model<IUser> implements IUser {
     try {
       if (instance.type === "normal_user") {
         const userCreated = await Normal_User.create({
-          normal_uid: instance.uid,
+          uid: instance.uid,
         });
       } else if (instance.type === "admin") {
-        const userCreated = await Admin.create({ admin_uid: instance.uid });
+        const userCreated = await Admin.create({ uid: instance.uid });
       }
     } catch (e: any) {
       throw new Error(e.message);

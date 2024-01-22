@@ -11,6 +11,7 @@ import {
   BelongsTo,
   HasOne,
   BeforeCreate,
+  AutoIncrement,
 } from "sequelize-typescript";
 import { INormal_user } from "../interfaces/objInterfaces";
 import moment from "moment";
@@ -29,13 +30,15 @@ import Address from "./Address";
   modelName: "Normal_User",
 })
 class Normal_User extends Model<INormal_user> implements INormal_user {
-  @ForeignKey(() => User)
   @AllowNull(false)
   @PrimaryKey
+  @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
+    field: "normal_uid",
   })
-  declare normal_uid: number;
+  uid?: number;
+
   @BelongsTo(() => User, {
     foreignKey: "uid",
     onDelete: "CASCADE",
@@ -47,11 +50,15 @@ class Normal_User extends Model<INormal_user> implements INormal_user {
     type: DataType.DATEONLY,
   })
   get date_of_birth(): string {
-    return moment(this.getDataValue("date_of_birth"), "YYYY-MM-DD").format("YYYY-MM-DD");
+    return this.getDataValue("date_of_birth")
+      ? moment(this.getDataValue("date_of_birth"), "YYYY-MM-DD").format(
+          "YYYY-MM-DD"
+        )
+      : "";
   }
-set date_of_birth(value:string){
-this.setDataValue("date_of_birth",value);
-}
+  set date_of_birth(value: string) {
+    this.setDataValue("date_of_birth", value);
+  }
 
   @Column({
     type: DataType.BIGINT,
@@ -78,7 +85,6 @@ this.setDataValue("date_of_birth",value);
   })
   declare cart?: Cart[];
 
-  
   @HasMany(() => Order, {
     foreignKey: "normal_uid",
   })
