@@ -1,5 +1,5 @@
 // import { auth } from "../firebaseConfig";
-import { IUser, IWishlist } from "../interfaces/objInterfaces";
+import { INormal_user, IUser, IWishlist } from "../interfaces/objInterfaces";
 import Session from "../models/Session";
 import User from "../models/User";
 import { v4 as uuidv4 } from "uuid";
@@ -12,7 +12,10 @@ import sequelizeConnection from "../conections/sequelizeConnection";
 import Cart from "../models/Cart";
 import Product_cart from "../models/Product_cart";
 import CProduct from "./product";
-
+import Normal_User from "../models/Normal_user";
+import { promises } from "dns";
+import { cloudinaryImageUploadMethod } from "../middleware/imageuploader";
+import Image from "../models/Image";
 
 export default class CUser {
   private static instance: CUser;
@@ -150,40 +153,42 @@ export default class CUser {
   async addToWishlist(productId: number, userId: number): Promise<boolean> {
     try {
       const trans = await sequelizeConnection.sequelize.transaction();
-try{ const instance = CProduct.getInstance();
-  const data = await instance.checkProductExists(productId);
-  if (data) {
       try {
-        const wishlist = await Wishlist.findOrCreate({
-          where: { normal_uid: userId },
-          transaction: trans,
-          lock: true,
-        });
-
-        const wishlistInfo = wishlist[0].toJSON();
-        try {
-          const wishlistProduct = await Product_wishlist.findOrCreate({
-            where: {
-              product_id: productId,
-              wishlist_id: wishlistInfo.wishlist_id,
-            },
-            transaction: trans,
-            lock: true,
-            skipLocked: true,
-          });
+        const instance = CProduct.getInstance();
+        const data = await instance.checkProductExists(productId);
+        if (data) {
           try {
-            const commitTrans = await trans.commit();
+            const wishlist = await Wishlist.findOrCreate({
+              where: { normal_uid: userId },
+              transaction: trans,
+              lock: true,
+            });
 
-            return true;
+            const wishlistInfo = wishlist[0].toJSON();
+            try {
+              const wishlistProduct = await Product_wishlist.findOrCreate({
+                where: {
+                  product_id: productId,
+                  wishlist_id: wishlistInfo.wishlist_id,
+                },
+                transaction: trans,
+                lock: true,
+                skipLocked: true,
+              });
+              try {
+                const commitTrans = await trans.commit();
+
+                return true;
+              } catch (error: any) {
+                throw new Error(error.message);
+              }
+            } catch (error: any) {
+              throw new Error(error.message);
+            }
           } catch (error: any) {
             throw new Error(error.message);
           }
-        } catch (error: any) {
-          throw new Error(error.message);
         }
-      } catch (error: any) {
-        throw new Error(error.message);
-      }}
       } catch (error: any) {
         await trans.rollback();
         throw new Error(error.message);
@@ -192,7 +197,6 @@ try{ const instance = CProduct.getInstance();
       throw new Error(error.message);
     }
   }
-
 
   async deleteFromWishlist(
     productId: number,
@@ -239,7 +243,6 @@ try{ const instance = CProduct.getInstance();
       throw new Error(error.message);
     }
   }
-
 
   async addToCart(
     productId: number,
@@ -379,5 +382,70 @@ try{ const instance = CProduct.getInstance();
     }
   }
 
+  async EditUserInfo(
+    userId: number,
+    updatedData: Partial<IUser & INormal_user>
+  ): Promise<any> {
+    if (updatedData.phone_number) {
+      updatedData.phone_number = parseInt(
+        updatedData.phone_number.toString().replace(/[()\s]/g, ""),
+        10
+      );
+    }
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+
+      const updateUserData = User.update(updatedData, {
+        where: {
+          uid: userId,
+        },
+        transaction: trans,
+      });
+
+      const updateNormalUserInfo = Normal_User.update(updatedData, {
+        where: {
+          normal_uid: userId,
+        },
+        transaction: trans,
+      });
+
+      const updatedUserData = Normal_User.findByPk(userId, {});
+      try {
+        const [, , userDataAfterUpdate] = await Promise.all([
+          updateUserData,
+          updateNormalUserInfo,
+          updatedUserData,
+        ]);
+        const commitTrans = await trans.commit();
+        return userDataAfterUpdate;
+      } catch (error: any) {
+        await trans.rollback();
+        if (error.name === "SequelizeUniqueConstraintError") {
+          throw new Error("The Email is used", {
+            cause: "SequelizeUniqueConstraintError",
+          });
+        } else throw new Error(error.message);
+      }
+    } catch (error: any) {
+      if (error.cause === "SequelizeUniqueConstraintError") {
+        throw new Error(error.message, { cause: error.cause });
+      } else throw new Error(error.message);
+    }
+  }
+
+  async updateUserImage(imageFile: any, userId: number) {
+    try {
+      const { path } = imageFile[0];
+      const url = (await cloudinaryImageUploadMethod(path)) as any;
+
+      const image = await Image.create({
+        normal_uid: userId,
+        name: imageFile[0].originalname,
+        url: url.res,
+      });
+      return url.res;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
 }
-  

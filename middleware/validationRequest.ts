@@ -1,6 +1,7 @@
-import { object, string, number, date, mixed, lazy } from "yup";
+import { object, string, number, date, mixed, lazy, array } from "yup";
 import { Request, Response, NextFunction, query } from "express";
 import { parse } from "date-fns";
+import "yup-phone-lite";
 
 async function UserCreateAccountValidation(
   req: Request,
@@ -456,6 +457,99 @@ async function validateDecreaseFromCart(
   }
 }
 
+async function UserEditInfoValidation(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let userSchema = object({
+    body: object({
+      first_name: string()
+        .strict(true)
+        .typeError("The First Name Should be String")
+        .min(3, "first name should not be less than 6 digits")
+        .max(10, "first name should not be greater than 10 digits")
+        .nullable(),
+
+      last_name: string()
+        .strict(true)
+        .typeError("The Last Name Should be String")
+        .nullable()
+        .min(3, "last name should not be less than 6 digits")
+        .max(10, "last name should not be greater than 10 digits"),
+
+      email: string()
+        .strict(true)
+        .typeError("The Email Should be String")
+        .email("It should be in the Email form")
+        .nullable(),
+
+      phone_number: string()
+        .phone("IN", "${path} is invalid")
+        .nullable()
+        .typeError("The phone_number should be in string form")
+        .matches(
+          /^[(][0-9]{3}[)][-\s\.][0-9]{3}[-\s\.][0-9]{4}$/,
+          "the phone number should be in format (xxx) xxx xxxx"
+        ),
+
+      date_of_birth: string()
+        .strict(true)
+        .typeError("date_of_birth must be a string formate")
+        .nullable()
+        .test("max", "the date is in the future", function (value) {
+          return value
+            ? Number(value?.split("-")[0]) < new Date().getFullYear()
+            : true;
+        })
+        .matches(
+          /^([0-9]{4})\-([0-9]{2})\-([0-9]{2})$/,
+          "date_of_birth must be in format yyyy-MM-dd"
+        ),
+    })
+      .required("To edit You Should enter valid Info")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await userSchema.validate({ body: req.body });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+async function ImageValidation(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let userSchema = array()
+    .of(
+      object().shape({
+        mimetype: string()
+          .required("Image mimetype is required")
+          .matches(
+            /^image\/(jpeg|jpg)$/,
+            "Invalid image format the format allowed are jpg and jpeg"
+          ),
+      })
+    )
+    .required("At least one image is required");
+
+  try {
+    const response = await userSchema.validate(req.files, {
+      abortEarly: false,
+    });
+
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -470,8 +564,6 @@ export default {
   validateCart,
   validateDeleteFromCart,
   validateDecreaseFromCart,
-
+  UserEditInfoValidation,
+  ImageValidation,
 };
-
-
-
