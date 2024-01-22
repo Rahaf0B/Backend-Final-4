@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import CUser from "../classes/user";
 import authorization from "../middleware/authorization";
 import validate from "../middleware/validationRequest";
+import CProduct from "../classes/product";
 const router = Router();
 
 router.use(cookieParser());
@@ -45,5 +46,24 @@ router.delete(
       res.status(500).end();
     }
   }
+);
+
+router.get("/products",
+authorization.authenticateUser,
+validate.validatePageAndItemNumber,
+
+async (req: Request, res: Response) =>{
+  try {
+    const instance = CProduct.getInstance();
+   const status = await instance.getProductsInWishlist(
+      req.uid,
+      Number(req.query.page_number),
+      Number(req.query.number_of_items)
+    );
+    res.status(200).send(status);
+  } catch (error: any) {
+    res.status(500).end();
+  }
+}
 );
 export default router;
