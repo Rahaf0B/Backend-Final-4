@@ -385,7 +385,7 @@ export default class CUser {
   async EditUserInfo(
     userId: number,
     updatedData: Partial<IUser & INormal_user>
-  ): Promise<any> {
+  ): Promise<Partial<IUser & INormal_user>> {
     if (updatedData.phone_number) {
       updatedData.phone_number = parseInt(
         updatedData.phone_number.toString().replace(/[()\s]/g, ""),
@@ -409,7 +409,18 @@ export default class CUser {
         transaction: trans,
       });
 
-      const updatedUserData = Normal_User.findByPk(userId, {});
+      const updatedUserData = Normal_User.findByPk(userId, {
+        subQuery: false,
+        raw: true,
+        include: { model: User, attributes: [] },
+        attributes: [
+          "user.first_name",
+          "user.last_name",
+          "user.email",
+          "phone_number",
+          "date_of_birth",
+        ],
+      });
       try {
         const [, , userDataAfterUpdate] = await Promise.all([
           updateUserData,
@@ -433,7 +444,7 @@ export default class CUser {
     }
   }
 
-  async updateUserImage(imageFile: any, userId: number) {
+  async updateUserImage(imageFile: any, userId: number): Promise<string> {
     try {
       const { path } = imageFile[0];
       const url = (await cloudinaryImageUploadMethod(path)) as any;
