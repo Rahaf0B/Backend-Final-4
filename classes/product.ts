@@ -120,6 +120,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -221,6 +222,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -433,6 +435,7 @@ export default class CProduct {
             required: false,
             attributes: [],
             subQuery: false,
+            where :{normal_uid:userId}
           },
           {
             model: Rating,
@@ -507,6 +510,7 @@ export default class CProduct {
             required: false,
             attributes: [],
             subQuery: false,
+            where :{normal_uid:userId}
           },
           {
             model: Rating,
@@ -579,6 +583,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -690,6 +695,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -769,6 +775,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -876,7 +883,7 @@ export default class CProduct {
           Sequelize.fn(
             "SUM",
             Sequelize.literal(
-              `DISTINCT CASE WHEN wishlist.normal_uid = ${
+              ` DISTINCT CASE WHEN wishlist.normal_uid = ${
                 userId ? userId : 0
               } THEN 1 ELSE 0 END`
             )
@@ -902,6 +909,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -916,7 +924,7 @@ export default class CProduct {
         },
       ],
       group: this.groupByProductQuery,
-      order: [["product_id", "ASC"]],
+      order: [["product_id", "DESC"],],
     });
     return { items_count, items };
   }
@@ -925,13 +933,7 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number
   ) {
-    const items_count: number = await product_wishlist.count({
-      include: [
-        {
-          model: Wishlist,
-          attributes: [],
-        },
-      ],
+    const items_count: number = await Product.count({
     });
 
     const items = await Product.findAll({
@@ -977,6 +979,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
+          where :{normal_uid:userId}
         },
         {
           model: Rating,
@@ -991,7 +994,7 @@ export default class CProduct {
         },
       ],
       group: this.groupByProductQuery,
-      order: [["product_id", "ASC"]],
+      order: [["product_id", "DESC"]],
     });
     return { items_count, items };
   }
