@@ -205,6 +205,32 @@ async function validatePageAndItemNumber(
   }
 }
 
+async function validatePageNumber(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
 async function validateTextSearch(
   req: Request,
   res: Response,
@@ -556,6 +582,7 @@ export default {
   validateGetByCategory,
   validateGetByBrand,
   validatePageAndItemNumber,
+  validatePageNumber,
   validateTextSearch,
   validateProductId,
   validateCategoryBrandID,
