@@ -11,18 +11,23 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 //addToWishlist
-router.post("/", async (req: Request, res: Response) => {
-  try {
-    const instance = CUser.getInstance();
-    const status = await instance.addToWishlist(
-      Number(req.query.product_id),
-      req.uid
-    );
-    res.status(200).send(status);
-  } catch (error: any) {
-    res.status(500).end();
+router.post(
+  "/",
+  authorization.authenticateUser,
+  validate.validateWishlist,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+      const status = await instance.addToWishlist(
+        Number(req.query.product_id),
+        req.uid
+      );
+      res.status(200).send(status);
+    } catch (error: any) {
+      res.status(500).end();
+    }
   }
-});
+);
 
 router.delete(
   "/",
