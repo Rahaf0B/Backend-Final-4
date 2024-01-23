@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import CUser from "../classes/user";
 import authorization from "../middleware/authorization";
 import validate from "../middleware/validationRequest";
+import CProduct from "../classes/product";
 
 const router = Router();
 
@@ -22,18 +23,26 @@ router.get("/test", (req: Request, res: Response) => {
 });
 
 //getCartInfo
-router.get("/", (req: Request, res: Response) => {
-  try {
-    const token = req.header("Authorization");
-    res.status(200).send({
-      function: "getCartInfo",
-      token: token,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+router.get(
+  "/",
+  authorization.authenticateUser,
+  validate.validatePageAndItemNumber,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const status = await instance.getProductsInCart(
+        req.uid,
+        Number(req.query.page_number),
+        Number(req.query.number_of_items)
+      );
+      res.status(200).send(status);
+
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
 //addToCart
 router.post(
