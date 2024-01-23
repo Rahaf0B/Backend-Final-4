@@ -575,7 +575,32 @@ async function ImageValidation(
     return res.status(400).send(e.message);
   }
 }
+async function validateOrderStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      order_status: number()
+        .typeError("order_status must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The order_status is required")
+        .min(0, "The order_status must not be less than 2")
+        .max(2, "The order_status must not be grater than 2")
+    }).noUnknown(true),
+  });
 
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -593,4 +618,5 @@ export default {
   validateDecreaseFromCart,
   UserEditInfoValidation,
   ImageValidation,
+  validateOrderStatus,
 };

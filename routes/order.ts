@@ -1,6 +1,10 @@
 import express, { Router, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import authorization from "../middleware/authorization";
+import validate from "../middleware/validationRequest";
+import CUser from "../classes/user";
+
 const router = Router();
 
 router.use(cookieParser());
@@ -18,8 +22,11 @@ router.get("/test",(req: Request, res: Response)=> {
     }
 });
 
-//getOrdersInfo
-router.get("/:order_status",(req: Request, res: Response)=> {
+//getOrderItems
+router.get("/Products",
+authorization.authenticateUser,
+//validate.validateOrderStatus,
+async (req: Request, res: Response)=> {
     try {
         const token = req.header('Authorization');
         const orderStatus=req.params.order_status;
@@ -28,6 +35,26 @@ router.get("/:order_status",(req: Request, res: Response)=> {
                 function: "getOrdersInfo",
                 token:token,
                 orderStatus:orderStatus
+            });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+//getUserOrders
+router.get("/",
+authorization.authenticateUser,
+validate.validateOrderStatus,
+async (req: Request, res: Response)=> {
+    try {
+        const instance = CUser.getInstance();
+      const data = await instance.getUserOrders(
+        req.uid,
+        Number(req.query.order_status),
+      ); res.status(200).send(
+            {
+                data                
             });
     } catch (error) {
         console.error('Error:', error);

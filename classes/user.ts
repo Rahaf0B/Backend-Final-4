@@ -16,6 +16,7 @@ import Normal_User from "../models/Normal_user";
 import { promises } from "dns";
 import { cloudinaryImageUploadMethod } from "../middleware/imageuploader";
 import Image from "../models/Image";
+import Order from "../models/Order";
 
 export default class CUser {
   private static instance: CUser;
@@ -458,5 +459,23 @@ export default class CUser {
     } catch (error: any) {
       throw new Error(error.message);
     }
+  }
+  async getUserOrders(userId: number,
+    orderStatus:number) {
+    const orders = await Order.findAll({
+      where: {
+        normal_uid: userId,
+        status:orderStatus
+      },
+      /*attributes: [
+        "order_id",
+        "total_price",
+        "status",
+        "payment_status",
+        "payment_type",
+        "address_id",
+      ],*/
+    });
+    return orders;
   }
 }
