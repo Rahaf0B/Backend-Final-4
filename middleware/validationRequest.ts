@@ -590,7 +590,16 @@ async function validateOrderStatus(
         .max(2, "The order_status must not be grater than 2"),
     }).noUnknown(true),
   });
-
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
 async function changePasswordValidation(
   req: Request,
   res: Response,
@@ -657,7 +666,6 @@ async function validateOrderItem(
     
       }).noUnknown(true),
     });
-
     try {
       const response = await validateSchema.validate({
         query: req.query,
@@ -766,7 +774,7 @@ async function validateAddOrder(
     return res.status(400).send(e.message);
   }
 }
-  }
+  
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,

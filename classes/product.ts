@@ -19,6 +19,7 @@ import product_wishlist from "../models/product_wishlist";
 import Product_cart from "../models/Product_cart";
 import Cart from "../models/Cart";
 import Order_item from "../models/Order_item";
+import Order from "../models/Order";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -916,7 +917,7 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return [items_count, items];
+    return {"items_count":items_count, "items":items};
   }
   async getAllProducts(
     userId: number,
@@ -982,11 +983,11 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return [items_count, items];
+    return {"items_count":items_count, "items":items};
   }
   async getProductsInCart(
     userId: number,
-  ): Promise<(number | Product[])[]> {
+  ){
     const cartId = await Cart.findOne({
       attributes: ["cart_id"],
       where: { normal_uid: userId },
@@ -1007,14 +1008,15 @@ export default class CProduct {
         "sub_title",
         "price",
         "quantity",
-        [
-          Sequelize.literal(`(
+
+        /*[Sequelize.literal(`(
           SELECT quantity 
           FROM product_cart 
-          WHERE product_cart.product_id IN (${product_id_all.join(",")})
+          WHERE product_cart.product_id = (${product_id_all.join(',')})
+          
         )`),
-          "quantity_in_cart",
-        ],
+        "quantity_in_cart"
+      ],*/
         
         [
           Sequelize.fn(
@@ -1059,29 +1061,27 @@ export default class CProduct {
           subQuery: false,
         },
         {
-          model: Cart,
-          attributes: [],
+          model: Product_cart,
+          //attributes: ["cart_id"],
           subQuery: false,
         },
       ],
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return [items_count, items];
+    return {"items_count":items_count, "items":items};
   }
   async getorderItems(
     userId:number,
     orderId:number,
     pageNumber: number,
-    numberOfItems: number): Promise<(number | Product[])[]>{
+    numberOfItems: number){
       
       const data = await Order_item.findAll({
-        where: { order_id: 1},
+        where: { order_id: orderId},
       });
       const items_count=data.length;
-      console.log(data);
       const product_id_all = data.map((value) => value.dataValues.product_id);
-      console.log(product_id_all);
 
     const items = await Product.findAll({
       where: {
@@ -1096,14 +1096,14 @@ export default class CProduct {
         "sub_title",
         "price",
         "quantity",
-        [
+        /*[
           Sequelize.literal(`(
           SELECT quantity 
-          FROM product_cart 
-          WHERE product_cart.product_id IN (${product_id_all.join(",")})
+          FROM order_item 
+          WHERE order_item.product_id IN (${product_id_all})
         )`),
-          "quantity_in_cart",
-        ],
+          "quantity_in_order",
+        ],*/
         
         [
           Sequelize.fn(
@@ -1134,7 +1134,6 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          //where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -1148,8 +1147,8 @@ export default class CProduct {
           subQuery: false,
         },
         {
-          model: Cart,
-          attributes: [],
+          model: Order_item,
+          attributes: ["name","sub_title","price","quantity"],
           subQuery: false,
         },
       ],
@@ -1157,7 +1156,7 @@ export default class CProduct {
       order: [["product_id", "DESC"]],
     });
     console.log(items);
-    return [items_count, items];
+    return {"items_count":items_count, "items":items};
   }
 
   async decreaseProductAmount(

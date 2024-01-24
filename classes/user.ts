@@ -537,14 +537,15 @@ export default class CUser {
         normal_uid: userId,
         status:orderStatus
       },
-      /*attributes: [
+      attributes: [
+        "date",
         "order_id",
         "total_price",
         "status",
         "payment_status",
         "payment_type",
         "address_id",
-      ],*/
+      ],
     });
     return orders;
 	}

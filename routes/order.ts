@@ -37,7 +37,7 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items)
         );
-      res.status(200).send({data});
+      res.status(200).send(data);
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -57,9 +57,7 @@ router.get(
         req.uid,
         Number(req.query.order_status)
       );
-      res.status(200).send({
-        data,
-      });
+      res.status(200).send(data,);
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Internal Server Error" });
