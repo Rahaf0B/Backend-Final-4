@@ -531,12 +531,11 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
-  async getUserOrders(userId: number,
-    orderStatus:number) {
+  async getUserOrders(userId: number, orderStatus: number) {
     const orders = await Order.findAll({
       where: {
         normal_uid: userId,
-        status:orderStatus
+        status: orderStatus,
       },
       attributes: [
         "date",
@@ -549,7 +548,7 @@ export default class CUser {
       ],
     });
     return orders;
-	}
+  }
   async clearSession(userId: number) {
     try {
       const deleteSession = await Session.destroy({
@@ -692,8 +691,12 @@ export default class CUser {
         transaction: trans,
       });
       for (const item of addedOrderItems) {
-const orderItemImages= await Image.update({order_item_id:item.order_id},{where:{[Op.and]:[{type:1},{product_id:item.product_id}]}});
-
+        const orderItemImages = await Image.update(
+          { order_item_id: item.order_id },
+          {
+            where: { [Op.and]: [{ type: 1 }, { product_id: item.product_id }] },
+          }
+        );
       }
       return addedOrderItems;
     } catch (error: any) {
@@ -727,7 +730,10 @@ const orderItemImages= await Image.update({order_item_id:item.order_id},{where:{
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
         try {
-          const productsInfo = await this.getProductIDAndInfoInCart(userId, trans);
+          const productsInfo = await this.getProductIDAndInfoInCart(
+            userId,
+            trans
+          );
 
           const instance = CProduct.getInstance();
 
@@ -769,14 +775,13 @@ const orderItemImages= await Image.update({order_item_id:item.order_id},{where:{
                   trans
                 );
 
-                  const value = await this.decreaseOrDeleteFromCart(
-                    acceptedProductIds,
-                    "delete",
-                    6,
-                    trans
-                  );
-                    const commitTrans = await trans.commit();
-
+                const value = await this.decreaseOrDeleteFromCart(
+                  acceptedProductIds,
+                  "delete",
+                  6,
+                  trans
+                );
+                const commitTrans = await trans.commit();
               } catch (error: any) {
                 throw new Error(error.message);
               }
@@ -799,14 +804,15 @@ const orderItemImages= await Image.update({order_item_id:item.order_id},{where:{
     }
   }
 
-
-async getUserAddresses(userId:number){
-try{
-  const userAddresses = await Address.findAll({where:{normal_uid:userId},attributes:{exclude:["normal_uid"]}});
-  return userAddresses;
-}catch (error:any) {
-  throw new Error(error.message)
-}}
-
-
+  async getUserAddresses(userId: number) {
+    try {
+      const userAddresses = await Address.findAll({
+        where: { normal_uid: userId },
+        attributes: { exclude: ["normal_uid"] },
+      });
+      return userAddresses;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
 }

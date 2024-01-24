@@ -95,8 +95,6 @@ router.post(
   }
 );
 
-
-
 router.get(
   "/address",
   authorization.authenticateUser,
@@ -104,7 +102,7 @@ router.get(
     try {
       const instance = CUser.getInstance();
 
-      const dataInfo = await instance.getUserAddresses( req.uid);
+      const dataInfo = await instance.getUserAddresses(req.uid);
       res.status(200).send(dataInfo);
     } catch (e: any) {
       if (e?.cause == "Validation Error") {
@@ -134,7 +132,6 @@ router.patch(
     }
   }
 );
-
 
 router.post(
   "/logout",
