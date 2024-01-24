@@ -67,7 +67,7 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   @Column({
     type: DataType.STRING,
   })
-  declare item_name: string;
+  declare name: string;
 
   @HasOne(() => Image, {
     foreignKey: "order_item_id",
@@ -78,12 +78,12 @@ class Order_item extends Model<IOrder_item> implements IOrder_item {
   @Column({
     type: DataType.DOUBLE,
   })
-  declare item_price: number;
+  declare price: number;
 
   @Column({
     type: DataType.STRING,
   })
-  declare item_sub_title?: string;
+  declare sub_title?: string;
 
   @AllowNull(false)
   @ForeignKey(() => Order)

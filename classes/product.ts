@@ -120,7 +120,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -222,7 +222,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -435,7 +435,7 @@ export default class CProduct {
             required: false,
             attributes: [],
             subQuery: false,
-            where :{normal_uid:userId}
+            where: { normal_uid: userId },
           },
           {
             model: Rating,
@@ -510,7 +510,7 @@ export default class CProduct {
             required: false,
             attributes: [],
             subQuery: false,
-            where :{normal_uid:userId}
+            where: { normal_uid: userId },
           },
           {
             model: Rating,
@@ -583,7 +583,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -695,7 +695,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -775,7 +775,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -906,7 +906,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -921,7 +921,7 @@ export default class CProduct {
         },
       ],
       group: this.groupByProductQuery,
-      order: [["product_id", "DESC"],],
+      order: [["product_id", "DESC"]],
     });
     return { items_count, items };
   }
@@ -930,8 +930,7 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number
   ) {
-    const items_count: number = await Product.count({
-    });
+    const items_count: number = await Product.count({});
 
     const items = await Product.findAll({
       subQuery: false,
@@ -976,7 +975,7 @@ export default class CProduct {
           required: false,
           attributes: [],
           subQuery: false,
-          where :{normal_uid:userId}
+          where: { normal_uid: userId },
         },
         {
           model: Rating,
@@ -994,5 +993,37 @@ export default class CProduct {
       order: [["product_id", "DESC"]],
     });
     return { items_count, items };
+  }
+
+  async decreaseProductAmount(
+    productId: number[],
+    quantity: number[],
+    trans: any
+  ): Promise<Partial<IProduct>[]> {
+    try {
+      let effectedProduct = [];
+      for (let i = 0; i < productId.length; i++) {
+        const [productDec] = await Product.decrement("quantity", {
+          by: quantity[i],
+
+          where: {
+            [Op.and]: [
+              { product_id: productId[i] },
+              { quantity: { [Op.gte]: quantity[i] } },
+            ],
+          },
+          transaction: trans,
+        });
+        const effectedOrNot = productDec[1] as unknown;
+        if (effectedOrNot == 1) {
+          const product = await Product.findByPk(productId[i], {
+            attributes: ["product_id"],
+          });
+
+          effectedProduct.push(product.toJSON());
+        }
+      }
+      return effectedProduct;
+    } catch (error) {}
   }
 }

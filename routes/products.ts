@@ -244,7 +244,8 @@ router.get(
     try {
       const instance = CProduct.getInstance();
       const data = await instance.getSingleProduct(
-        Number(req.params.product_id)
+        Number(req.params.product_id),
+        req.uid
       );
       res.status(200).send(data);
     } catch (error) {
