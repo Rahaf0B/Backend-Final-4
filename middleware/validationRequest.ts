@@ -576,6 +576,55 @@ async function ImageValidation(
   }
 }
 
+async function changePasswordValidation(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let userSchema = object({
+    body: object({
+      old_password: string()
+        .strict(true)
+        .typeError("The old_password Should be String")
+        .nullable()
+        .required("The old Password is required"),
+
+      new_password: string()
+        .strict(true)
+        .typeError("The new_password Should be String")
+        .nullable()
+        .min(6, "password should not be less than 6 digits")
+        .matches(
+          /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/,
+          "The password must contain characters,numbers and special characters"
+        )
+        .required("The new Password is required"),
+
+      confirm_password: string()
+        .strict(true)
+        .typeError("The confirm_password Should be String")
+        .nullable()
+        .min(6, "password should not be less than 6 digits")
+        .matches(
+          /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/,
+          "The password must contain characters,numbers and special characters"
+        )
+        .required("The confirm Password  is required"),
+    })
+      .required("The old ,new and confirm Passwords are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await userSchema.validate({ body: req.body });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -593,4 +642,5 @@ export default {
   validateDecreaseFromCart,
   UserEditInfoValidation,
   ImageValidation,
+  changePasswordValidation,
 };

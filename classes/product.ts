@@ -856,13 +856,10 @@ export default class CProduct {
       attributes: ["wishlist_id"],
       where: { normal_uid: userId },
     });
-    console.log(wishlistId.dataValues);
     const data = await product_wishlist.findAll({
       where: { wishlist_id: wishlistId.dataValues.wishlist_id },
     });
-    // console.log(data);
     const product_id_all = data.map((value) => value.dataValues.product_id);
-    console.log(product_id_all);
     const items = await Product.findAll({
       where: {
         product_id: { [Op.in]: product_id_all },

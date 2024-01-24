@@ -124,9 +124,11 @@ export default class CUser {
           );
           if (validate) {
             delete userData.password;
+            delete userData.type;
             const [token, expirationDate] = await this.generateOrUpdateSession(
               userData.uid
             );
+            delete userData.uid;
             return [userData, token, expirationDate];
           } else {
             throw new Error("Invalid Data Try Again", {
@@ -457,6 +459,78 @@ export default class CUser {
       return url.res;
     } catch (error: any) {
       throw new Error(error.message);
+    }
+  }
+
+  async clearSession(userId: number) {
+    try {
+      const deleteSession = await Session.destroy({
+        where: {
+          uid: userId,
+        },
+      });
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+
+  async changePassword(passwords: any, userId: number): Promise<void> {
+    try {
+      const userData = await this.checkUserExists("uid", userId);
+      if (userData) {
+        try {
+          const validate = await bcrypt.compare(
+            passwords.old_password,
+            userData.password
+          );
+
+          if (
+            validate &&
+            passwords.new_password === passwords.confirm_password
+          ) {
+            const salt = bcrypt.genSaltSync(10);
+            const updatedPassword = bcrypt.hashSync(
+              passwords.new_password,
+              salt
+            );
+            try {
+              const updatedData = User.update(
+                { password: updatedPassword },
+                {
+                  where: {
+                    uid: userId,
+                  },
+                }
+              );
+              const clearedSession = this.clearSession(userId);
+              await Promise.all([updatedData, clearedSession]);
+            } catch (e: any) {
+              throw new Error(e.message);
+            }
+          } else {
+            throw new Error(
+              validate
+                ? "NewPass and the confirm pass are not the same"
+                : "Invalid password",
+              {
+                cause: "Validation Error",
+              }
+            );
+          }
+        } catch (e: any) {
+          if (e.cause === "Validation Error") {
+            throw new Error(e.message, {
+              cause: "Validation Error",
+            });
+          } else throw new Error(e);
+        }
+      }
+    } catch (e: any) {
+      if (e.cause === "Validation Error") {
+        throw new Error(e.message, {
+          cause: "Validation Error",
+        });
+      } else throw new Error(e);
     }
   }
 }
