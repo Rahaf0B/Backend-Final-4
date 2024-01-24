@@ -26,14 +26,11 @@ router.get("/test", (req: Request, res: Response) => {
 router.get(
   "/",
   authorization.authenticateUser,
-  validate.validatePageAndItemNumber,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
       const status = await instance.getProductsInCart(
-        req.uid,
-        Number(req.query.page_number),
-        Number(req.query.number_of_items)
+        req.uid
       );
       res.status(200).send(status);
 

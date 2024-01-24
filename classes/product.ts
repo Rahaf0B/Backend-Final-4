@@ -18,6 +18,8 @@ import User from "../models/User";
 import product_wishlist from "../models/product_wishlist";
 import Product_cart from "../models/Product_cart";
 import Cart from "../models/Cart";
+import Order from "../models/Order";
+import Order_item from "../models/Order_item";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -845,26 +847,15 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number
   ) {
-    const items_count: number = await product_wishlist.count({
-      include: [
-        {
-          model: Wishlist,
-          attributes: [],
-          where: { normal_uid: userId },
-        },
-      ],
-    });
     const wishlistId = await Wishlist.findOne({
       attributes: ["wishlist_id"],
       where: { normal_uid: userId },
     });
-    console.log(wishlistId.dataValues);
     const data = await product_wishlist.findAll({
       where: { wishlist_id: wishlistId.dataValues.wishlist_id },
     });
-    // console.log(data);
+    const items_count=data.length;
     const product_id_all = data.map((value) => value.dataValues.product_id);
-    console.log(product_id_all);
     const items = await Product.findAll({
       where: {
         product_id: { [Op.in]: product_id_all },
@@ -995,36 +986,21 @@ export default class CProduct {
   }
   async getProductsInCart(
     userId: number,
-    pageNumber: number,
-    numberOfItems: number
   ): Promise<(number | Product[])[]> {
-    const items_count: number = await Product_cart.count({
-      include: [
-        {
-          model: Cart,
-          attributes: [],
-          where: { normal_uid: userId },
-        },
-      ],
-    });
     const cartId = await Cart.findOne({
       attributes: ["cart_id"],
       where: { normal_uid: userId },
     });
-    console.log(cartId.dataValues);
     const data = await Product_cart.findAll({
       where: { cart_id: cartId.dataValues.cart_id },
     });
-    console.log(data);
+    const items_count=data.length;
     const product_id_all = data.map((value) => value.dataValues.product_id);
-    console.log(product_id_all);
     const items = await Product.findAll({
       where: {
         product_id: { [Op.in]: product_id_all },
       },
       subQuery: false,
-      offset: (pageNumber - 1) * numberOfItems,
-      limit: numberOfItems,
       attributes: [
         "product_id",
         "name",
@@ -1091,6 +1067,96 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
+    return [items_count, items];
+  }
+  async getorderItems(
+    userId:number,
+    orderId:number,
+    pageNumber: number,
+    numberOfItems: number): Promise<(number | Product[])[]>{
+      
+      const data = await Order_item.findAll({
+        where: { order_id: 1},
+      });
+      const items_count=data.length;
+      console.log(data);
+      const product_id_all = data.map((value) => value.dataValues.product_id);
+      console.log(product_id_all);
+
+    const items = await Product.findAll({
+      where: {
+        product_id: { [Op.in]: product_id_all },
+      },
+      subQuery: false,
+      offset: (pageNumber - 1) * numberOfItems,
+      limit: numberOfItems,
+      attributes: [
+        "product_id",
+        "name",
+        "sub_title",
+        "price",
+        "quantity",
+        [
+          Sequelize.literal(`(
+          SELECT quantity 
+          FROM product_cart 
+          WHERE product_cart.product_id IN (${product_id_all.join(",")})
+        )`),
+          "quantity_in_cart",
+        ],
+        
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              ` DISTINCT CASE WHEN wishlist.normal_uid = ${
+                userId ? userId : 0
+              } THEN 1 ELSE 0 END`
+            )
+          ),
+          "is_liked",
+        ],
+        [this.discountProduct, "discount_value"],
+       
+      ],
+
+      include: [
+        {
+          model: Image,
+          required: false,
+          nested: true,
+          attributes: ["image_id", "name", "url"],
+          where: { type: { [Op.eq]: 1 } },
+          subQuery: false,
+        },
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [],
+          subQuery: false,
+          //where: { normal_uid: userId },
+        },
+        {
+          model: Rating,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Discount,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Cart,
+          attributes: [],
+          subQuery: false,
+        },
+      ],
+      group: this.groupByProductQuery,
+      order: [["product_id", "DESC"]],
+    });
+    console.log(items);
     return [items_count, items];
   }
 }

@@ -588,7 +588,7 @@ async function validateOrderStatus(
         .nullable()
         .required("The order_status is required")
         .min(0, "The order_status must not be less than 2")
-        .max(2, "The order_status must not be grater than 2")
+        .max(2, "The order_status must not be grater than 2"),
     }).noUnknown(true),
   });
 
@@ -600,6 +600,39 @@ async function validateOrderStatus(
   } catch (e: any) {
     return res.status(400).send(e.message);
   }
+}
+async function validateOrderItem(
+  req:Request,
+  res:Response,
+  next:NextFunction
+){
+
+  let validateSchema = object({
+    query: object({
+      order_id: number()
+        .typeError("order_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The order_id is required")
+        .min(0, "The order_id must not be grater than 0"),
+    
+    
+      }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+
+
+
+
+  
 }
 export default {
   UserCreateAccountValidation,
@@ -619,4 +652,5 @@ export default {
   UserEditInfoValidation,
   ImageValidation,
   validateOrderStatus,
+  validateOrderItem,
 };
