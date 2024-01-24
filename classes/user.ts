@@ -5,6 +5,7 @@ import {
   IOrder,
   IOrder_item,
   IProduct,
+  IRating,
   IUser,
   IWishlist,
 } from "../interfaces/objInterfaces";
@@ -31,6 +32,7 @@ import Product from "../models/Product";
 import cls from "cls-hooked";
 import { Sequelize } from "sequelize-typescript";
 import { Op } from "sequelize";
+import Rating from "../models/Rating";
 
 export default class CUser {
   private static instance: CUser;
@@ -812,6 +814,25 @@ export default class CUser {
       });
       return userAddresses;
     } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async addUserReview(data: Partial<IRating>, userId: number) {
+    try {
+      const addReview = await Rating.findOrCreate({
+        defaults: {
+          normal_uid: userId,
+          product_id: data.product_id,
+          comment: data.comment,
+          value: data.value,
+        },
+        where: {
+          [Op.and]: [{ normal_uid: userId }, { product_id: data.product_id }],
+        },
+      });
+    } catch (error: any) {
+      console.error(error);
       throw new Error(error.message);
     }
   }
