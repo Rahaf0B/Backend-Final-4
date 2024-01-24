@@ -27,15 +27,11 @@ router.get(
   "/products",
   authorization.authenticateUser,
   validate.validateOrderItem,
-  validate.validatePageAndItemNumber,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
        const data = await instance.getorderItems(
-        req.uid,
         Number(req.query.order_id),
-        Number(req.query.page_number),
-        Number(req.query.number_of_items)
         );
       res.status(200).send(data);
     } catch (error) {

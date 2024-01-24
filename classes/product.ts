@@ -20,6 +20,7 @@ import Product_cart from "../models/Product_cart";
 import Cart from "../models/Cart";
 import Order_item from "../models/Order_item";
 import Order from "../models/Order";
+import Address from "../models/Address";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -854,8 +855,7 @@ export default class CProduct {
     const data = await product_wishlist.findAll({
       where: { wishlist_id: wishlistId.dataValues.wishlist_id },
     });
-    const items_count=data.length;
-
+    const items_count = data.length;
     const product_id_all = data.map((value) => value.dataValues.product_id);
     const items = await Product.findAll({
       where: {
@@ -917,7 +917,7 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return {"items_count":items_count, "items":items};
+    return [  items_count,  items ];
   }
   async getAllProducts(
     userId: number,
@@ -983,24 +983,11 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return {"items_count":items_count, "items":items};
+    return [items_count,items] ;
   }
-  async getProductsInCart(
-    userId: number,
-  ){
-    const cartId = await Cart.findOne({
-      attributes: ["cart_id"],
-      where: { normal_uid: userId },
-    });
-    const data = await Product_cart.findAll({
-      where: { cart_id: cartId.dataValues.cart_id },
-    });
-    const items_count=data.length;
-    const product_id_all = data.map((value) => value.dataValues.product_id);
+
+  async getProductsInCart(userId: number): Promise<Partial<IProduct>[]> {
     const items = await Product.findAll({
-      where: {
-        product_id: { [Op.in]: product_id_all },
-      },
       subQuery: false,
       attributes: [
         "product_id",
@@ -1008,16 +995,7 @@ export default class CProduct {
         "sub_title",
         "price",
         "quantity",
-
-        /*[Sequelize.literal(`(
-          SELECT quantity 
-          FROM product_cart 
-          WHERE product_cart.product_id = (${product_id_all.join(',')})
-          
-        )`),
-        "quantity_in_cart"
-      ],*/
-        
+        [Sequelize.col("product_cart.quantity"), "cart_quantity"],
         [
           Sequelize.fn(
             "SUM",
@@ -1030,9 +1008,7 @@ export default class CProduct {
           "is_liked",
         ],
         [this.discountProduct, "discount_value"],
-       
       ],
-
       include: [
         {
           model: Image,
@@ -1050,11 +1026,6 @@ export default class CProduct {
           where: { normal_uid: userId },
         },
         {
-          model: Rating,
-          attributes: [],
-          subQuery: false,
-        },
-        {
           model: Discount,
           required: false,
           attributes: [],
@@ -1062,101 +1033,78 @@ export default class CProduct {
         },
         {
           model: Product_cart,
-          //attributes: ["cart_id"],
-          subQuery: false,
+          include: [
+            {
+              model: Cart,
+              where: { normal_uid: userId },
+              attributes: [],
+              required: true,
+            },
+          ],
+          required: true,
+          attributes: [],
         },
       ],
-      group: this.groupByProductQuery,
+      group: [
+        "product_id",
+        "image_id",
+        "wishlist.wishlist_id",
+        "product_cart.cart_id",
+        "discount.discount_id",
+      ],
       order: [["product_id", "DESC"]],
     });
-    return {"items_count":items_count, "items":items};
+    return items;
   }
-  async getorderItems(
-    userId:number,
-    orderId:number,
-    pageNumber: number,
-    numberOfItems: number){
-      
-      const data = await Order_item.findAll({
-        where: { order_id: orderId},
-      });
-      const items_count=data.length;
-      const product_id_all = data.map((value) => value.dataValues.product_id);
-
-    const items = await Product.findAll({
-      where: {
-        product_id: { [Op.in]: product_id_all },
-      },
+  async getorderItems( orderId: number) {
+    const orderInfo = await Order.findAll({
+      where: { order_id: orderId },
       subQuery: false,
-      offset: (pageNumber - 1) * numberOfItems,
-      limit: numberOfItems,
+      attributes: [
+        "total_price",
+        [Sequelize.col("address.first_name"), "first_name"],
+        [Sequelize.col("address.last_name"), "last_name"],
+        [Sequelize.col("address.email"), "email"],
+        [Sequelize.col("address.phone_number"), "phone_number"],
+        [Sequelize.col("address.location"), "location"],
+      ],
+      include: [
+        {
+          model: Address,
+          required: false,
+          attributes: [],
+        },
+      ],
+    });
+    
+    const data = await Order_item.findAll({
+      where: { order_id: orderId },
       attributes: [
         "product_id",
-        "name",
-        "sub_title",
-        "price",
+        "product_id",
         "quantity",
-        /*[
-          Sequelize.literal(`(
-          SELECT quantity 
-          FROM order_item 
-          WHERE order_item.product_id IN (${product_id_all})
-        )`),
-          "quantity_in_order",
-        ],*/
-        
-        [
-          Sequelize.fn(
-            "SUM",
-            Sequelize.literal(
-              ` DISTINCT CASE WHEN wishlist.normal_uid = ${
-                userId ? userId : 0
-              } THEN 1 ELSE 0 END`
-            )
-          ),
-          "is_liked",
-        ],
-        [this.discountProduct, "discount_value"],
-       
+        "name",
+        "price",
+        "sub_title",
       ],
-
       include: [
         {
           model: Image,
-          required: false,
-          nested: true,
           attributes: ["image_id", "name", "url"],
-          where: { type: { [Op.eq]: 1 } },
+          nested: true,
           subQuery: false,
         },
         {
-          model: Wishlist,
+          model: Order,
+          nested: true,
+          subQuery: false,
           required: false,
           attributes: [],
-          subQuery: false,
-        },
-        {
-          model: Rating,
-          attributes: [],
-          subQuery: false,
-        },
-        {
-          model: Discount,
-          required: false,
-          attributes: [],
-          subQuery: false,
-        },
-        {
-          model: Order_item,
-          attributes: ["name","sub_title","price","quantity"],
-          subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
-      order: [["product_id", "DESC"]],
     });
-    console.log(items);
-    return {"items_count":items_count, "items":items};
+
+    return [orderInfo, data];
   }
 
   async decreaseProductAmount(
