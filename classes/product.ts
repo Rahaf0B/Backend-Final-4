@@ -917,7 +917,7 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return [  items_count,  items ];
+    return [items_count, items];
   }
   async getAllProducts(
     userId: number,
@@ -983,7 +983,7 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return [items_count,items] ;
+    return [items_count, items];
   }
 
   async getProductsInCart(userId: number): Promise<Partial<IProduct>[]> {
@@ -1056,7 +1056,7 @@ export default class CProduct {
     });
     return items;
   }
-  async getorderItems( orderId: number) {
+  async getorderItems(orderId: number) {
     const orderInfo = await Order.findAll({
       where: { order_id: orderId },
       subQuery: false,
@@ -1076,7 +1076,7 @@ export default class CProduct {
         },
       ],
     });
-    
+
     const data = await Order_item.findAll({
       where: { order_id: orderId },
       attributes: [
@@ -1117,7 +1117,6 @@ export default class CProduct {
       for (let i = 0; i < productId.length; i++) {
         const [productDec] = await Product.decrement("quantity", {
           by: quantity[i],
-
           where: {
             [Op.and]: [
               { product_id: productId[i] },
