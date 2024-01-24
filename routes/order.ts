@@ -1,6 +1,10 @@
 import express, { Router, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import CUser from "../classes/user";
+import authorization from "../middleware/authorization";
+import validate from "../middleware/validationRequest";
+
 const router = Router();
 
 router.use(cookieParser());
@@ -34,4 +38,33 @@ router.get("/:order_status",(req: Request, res: Response)=> {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
+
+router.post("/new_address", authorization.authenticateUser,validate.UserAddressValidation,async (req: Request, res: Response)=> {
+    try {
+        const instance = CUser.getInstance();
+ const data= await instance.addOrderAddress(req.body,req.uid)
+        res.status(200).send(
+           data);
+    } catch (error) {
+       
+        res.status(500).end();
+    }
+});
+
+
+
+router.post("/new_order", authorization.authenticateUser,validate.validateAddOrder,async (req: Request, res: Response)=> {
+    try {
+        const instance = CUser.getInstance();
+ const data= await instance.orderCheckOut(req.uid,Number(req.body.address_id),req.body.payment_type)
+        res.status(200).send(
+           data);
+    } catch (error) {
+        res.status(500).end();
+    }
+});
+
+
 export default router;

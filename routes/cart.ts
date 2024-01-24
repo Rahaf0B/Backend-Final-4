@@ -63,9 +63,8 @@ router.patch(
   async (req: Request, res: Response) => {
     try {
       const instance = CUser.getInstance();
-      const data = await instance.decreaseOrDeleteFromCart(
+      const data = await instance.decreaseQuantityProductFromCart(
         Number(req.body.product_id),
-        "decrease",
         req.uid,
         Number(req.body.quantity)
       );
@@ -84,9 +83,8 @@ router.delete(
   async (req: Request, res: Response) => {
     try {
       const instance = CUser.getInstance();
-      const data = await instance.decreaseOrDeleteFromCart(
+      const data = await instance.removeFromCart(
         Number(req.query.product_id),
-        "delete",
         req.uid
       );
       res.status(200).send(data);
