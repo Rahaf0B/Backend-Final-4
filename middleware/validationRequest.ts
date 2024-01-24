@@ -574,7 +574,32 @@ async function ImageValidation(
     return res.status(400).send(e.message);
   }
 }
-
+async function validateOrderStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      order_status: number()
+        .typeError("order_status must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The order_status is required")
+        .min(0, "The order_status must not be less than 2")
+        .max(2, "The order_status must not be grater than 2"),
+    }).noUnknown(true),
+  });
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
 async function changePasswordValidation(
   req: Request,
   res: Response,
@@ -623,6 +648,34 @@ async function changePasswordValidation(
     return res.status(400).send(e.message);
   }
 }
+async function validateOrderItem(
+  req:Request,
+  res:Response,
+  next:NextFunction
+){
+
+  let validateSchema = object({
+    query: object({
+      order_id: number()
+        .typeError("order_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The order_id is required")
+        .min(0, "The order_id must not be grater than 0"),
+    
+    
+      }).noUnknown(true),
+    });
+    try {
+      const response = await validateSchema.validate({
+        query: req.query,
+        body: req.body,
+      });
+      next();
+    } catch (e: any) {
+      return res.status(400).send(e.message);
+    }
+  }
 
 async function UserAddressValidation(
   req: Request,
@@ -713,6 +766,7 @@ async function validateAddOrder(
 
   try {
     const response = await validateSchema.validate({
+      query: req.query,
       body: req.body,
     });
     next();
@@ -720,6 +774,7 @@ async function validateAddOrder(
     return res.status(400).send(e.message);
   }
 }
+  
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -737,7 +792,9 @@ export default {
   validateDecreaseFromCart,
   UserEditInfoValidation,
   ImageValidation,
+  validateOrderStatus,
+  validateOrderItem,
   changePasswordValidation,
   UserAddressValidation,
-  validateAddOrder
-};
+  validateAddOrder,
+}

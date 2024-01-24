@@ -16,6 +16,11 @@ import FuzzySearch from "fuzzy-search";
 import Normal_User from "../models/Normal_user";
 import User from "../models/User";
 import product_wishlist from "../models/product_wishlist";
+import Product_cart from "../models/Product_cart";
+import Cart from "../models/Cart";
+import Order_item from "../models/Order_item";
+import Order from "../models/Order";
+import Address from "../models/Address";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -843,15 +848,6 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number
   ) {
-    const items_count: number = await product_wishlist.count({
-      include: [
-        {
-          model: Wishlist,
-          attributes: [],
-          where: { normal_uid: userId },
-        },
-      ],
-    });
     const wishlistId = await Wishlist.findOne({
       attributes: ["wishlist_id"],
       where: { normal_uid: userId },
@@ -859,6 +855,7 @@ export default class CProduct {
     const data = await product_wishlist.findAll({
       where: { wishlist_id: wishlistId.dataValues.wishlist_id },
     });
+    const items_count = data.length;
     const product_id_all = data.map((value) => value.dataValues.product_id);
     const items = await Product.findAll({
       where: {
@@ -873,9 +870,6 @@ export default class CProduct {
         "sub_title",
         "price",
         "quantity",
-        "description",
-        "category_id",
-        "brand_id",
         [
           Sequelize.fn(
             "SUM",
@@ -923,7 +917,7 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return { items_count, items };
+    return [items_count, items];
   }
   async getAllProducts(
     userId: number,
@@ -942,9 +936,6 @@ export default class CProduct {
         "sub_title",
         "price",
         "quantity",
-        "description",
-        "category_id",
-        "brand_id",
         [
           Sequelize.fn(
             "SUM",
@@ -992,7 +983,128 @@ export default class CProduct {
       group: this.groupByProductQuery,
       order: [["product_id", "DESC"]],
     });
-    return { items_count, items };
+    return [items_count, items];
+  }
+
+  async getProductsInCart(userId: number): Promise<Partial<IProduct>[]> {
+    const items = await Product.findAll({
+      subQuery: false,
+      attributes: [
+        "product_id",
+        "name",
+        "sub_title",
+        "price",
+        "quantity",
+        [Sequelize.col("product_cart.quantity"), "cart_quantity"],
+        [
+          Sequelize.fn(
+            "SUM",
+            Sequelize.literal(
+              ` DISTINCT CASE WHEN wishlist.normal_uid = ${
+                userId ? userId : 0
+              } THEN 1 ELSE 0 END`
+            )
+          ),
+          "is_liked",
+        ],
+        [this.discountProduct, "discount_value"],
+      ],
+      include: [
+        {
+          model: Image,
+          required: false,
+          nested: true,
+          attributes: ["image_id", "name", "url"],
+          where: { type: { [Op.eq]: 1 } },
+          subQuery: false,
+        },
+        {
+          model: Wishlist,
+          required: false,
+          attributes: [],
+          subQuery: false,
+          where: { normal_uid: userId },
+        },
+        {
+          model: Discount,
+          required: false,
+          attributes: [],
+          subQuery: false,
+        },
+        {
+          model: Product_cart,
+          include: [
+            {
+              model: Cart,
+              where: { normal_uid: userId },
+              attributes: [],
+              required: true,
+            },
+          ],
+          required: true,
+          attributes: [],
+        },
+      ],
+      group: [
+        "product_id",
+        "image_id",
+        "wishlist.wishlist_id",
+        "product_cart.cart_id",
+        "discount.discount_id",
+      ],
+      order: [["product_id", "DESC"]],
+    });
+    return items;
+  }
+  async getorderItems(orderId: number) {
+    const orderInfo = await Order.findAll({
+      where: { order_id: orderId },
+      subQuery: false,
+      attributes: [
+        "total_price",
+        [Sequelize.col("address.first_name"), "first_name"],
+        [Sequelize.col("address.last_name"), "last_name"],
+        [Sequelize.col("address.email"), "email"],
+        [Sequelize.col("address.phone_number"), "phone_number"],
+        [Sequelize.col("address.location"), "location"],
+      ],
+      include: [
+        {
+          model: Address,
+          required: false,
+          attributes: [],
+        },
+      ],
+    });
+
+    const data = await Order_item.findAll({
+      where: { order_id: orderId },
+      attributes: [
+        "product_id",
+        "product_id",
+        "quantity",
+        "name",
+        "price",
+        "sub_title",
+      ],
+      include: [
+        {
+          model: Image,
+          attributes: ["image_id", "name", "url"],
+          nested: true,
+          subQuery: false,
+        },
+        {
+          model: Order,
+          nested: true,
+          subQuery: false,
+          required: false,
+          attributes: [],
+        },
+      ],
+    });
+
+    return [orderInfo, data];
   }
 
   async decreaseProductAmount(
@@ -1005,7 +1117,6 @@ export default class CProduct {
       for (let i = 0; i < productId.length; i++) {
         const [productDec] = await Product.decrement("quantity", {
           by: quantity[i],
-
           where: {
             [Op.and]: [
               { product_id: productId[i] },

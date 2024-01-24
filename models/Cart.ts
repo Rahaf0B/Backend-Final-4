@@ -10,6 +10,7 @@ import {
   BelongsTo,
   AutoIncrement,
   BelongsToMany,
+  HasMany,
 } from "sequelize-typescript";
 import { ICart } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
@@ -46,6 +47,8 @@ class Cart extends Model<ICart> implements ICart {
 
   @BelongsToMany(() => Product, () => Product_cart)
   declare product: Product[];
+  @HasMany(() => Product_cart, { foreignKey: "cart_id" })
+  declare product_cart?: Product_cart[];
 }
 
 export default Cart;

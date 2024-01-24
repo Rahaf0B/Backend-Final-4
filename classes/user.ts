@@ -24,12 +24,13 @@ import Normal_User from "../models/Normal_user";
 import { promises } from "dns";
 import { cloudinaryImageUploadMethod } from "../middleware/imageuploader";
 import Image from "../models/Image";
-import Address from "../models/Address";
 import Order from "../models/Order";
+import Address from "../models/Address";
 import Order_item from "../models/Order_item";
 import Product from "../models/Product";
 import cls from "cls-hooked";
 import { Sequelize } from "sequelize-typescript";
+
 export default class CUser {
   private static instance: CUser;
   private sequelizeNameSpace = cls.createNamespace("userTransaction");
@@ -529,7 +530,25 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
-
+  async getUserOrders(userId: number,
+    orderStatus:number) {
+    const orders = await Order.findAll({
+      where: {
+        normal_uid: userId,
+        status:orderStatus
+      },
+      attributes: [
+        "date",
+        "order_id",
+        "total_price",
+        "status",
+        "payment_status",
+        "payment_type",
+        "address_id",
+      ],
+    });
+    return orders;
+	}
   async clearSession(userId: number) {
     try {
       const deleteSession = await Session.destroy({

@@ -126,6 +126,8 @@ class Product extends Model<IProduct> implements IProduct {
 
   @BelongsToMany(() => Cart, () => Product_cart)
   declare cart?: Cart[];
+  @HasMany(() => Product_cart, { foreignKey: "product_id" })
+  declare product_cart?: Product_cart[];
 
   @BeforeCreate
   static setCreatedDate(instance: Product) {

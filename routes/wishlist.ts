@@ -48,22 +48,23 @@ router.delete(
   }
 );
 
-router.get("/products",
-authorization.authenticateUser,
-validate.validatePageAndItemNumber,
+router.get(
+  "/products",
+  authorization.authenticateUser,
+  validate.validatePageAndItemNumber,
 
-async (req: Request, res: Response) =>{
-  try {
-    const instance = CProduct.getInstance();
-   const status = await instance.getProductsInWishlist(
-      req.uid,
-      Number(req.query.page_number),
-      Number(req.query.number_of_items)
-    );
-    res.status(200).send(status);
-  } catch (error: any) {
-    res.status(500).end();
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const status = await instance.getProductsInWishlist(
+        req.uid,
+        Number(req.query.page_number),
+        Number(req.query.number_of_items)
+      );
+      res.status(200).send(status);
+    } catch (error: any) {
+      res.status(500).end();
+    }
   }
-}
 );
 export default router;
