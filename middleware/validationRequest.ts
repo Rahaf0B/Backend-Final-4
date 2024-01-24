@@ -218,7 +218,6 @@ async function validatePageNumber(
         .nullable()
         .required("The page_number is required")
         .min(1, "The page_number must be 1 or above"),
-
     }).noUnknown(true),
   });
 
@@ -511,7 +510,7 @@ async function UserEditInfoValidation(
         .nullable(),
 
       phone_number: string()
-        .phone("IN", "${path} is invalid")
+        .phone("IN", "phone_number is invalid")
         .nullable()
         .typeError("The phone_number should be in string form")
         .matches(
@@ -592,10 +591,49 @@ async function validateOrderStatus(
     }).noUnknown(true),
   });
 
+async function changePasswordValidation(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let userSchema = object({
+    body: object({
+      old_password: string()
+        .strict(true)
+        .typeError("The old_password Should be String")
+        .nullable()
+        .required("The old Password is required"),
+
+      new_password: string()
+        .strict(true)
+        .typeError("The new_password Should be String")
+        .nullable()
+        .min(6, "password should not be less than 6 digits")
+        .matches(
+          /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/,
+          "The password must contain characters,numbers and special characters"
+        )
+        .required("The new Password is required"),
+
+      confirm_password: string()
+        .strict(true)
+        .typeError("The confirm_password Should be String")
+        .nullable()
+        .min(6, "password should not be less than 6 digits")
+        .matches(
+          /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).*$/,
+          "The password must contain characters,numbers and special characters"
+        )
+        .required("The confirm Password  is required"),
+    })
+      .required("The old ,new and confirm Passwords are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
   try {
-    const response = await validateSchema.validate({
-      query: req.query,
-    });
+    const response = await userSchema.validate({ body: req.body });
     next();
   } catch (e: any) {
     return res.status(400).send(e.message);
@@ -618,22 +656,117 @@ async function validateOrderItem(
     
     
       }).noUnknown(true),
+    });
+
+    try {
+      const response = await validateSchema.validate({
+        query: req.query,
+        body: req.body,
+      });
+      next();
+    } catch (e: any) {
+      return res.status(400).send(e.message);
+    }
+  }
+
+async function UserAddressValidation(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let userSchema = object({
+    body: object({
+      first_name: string()
+        .strict(true)
+        .typeError("The First Name Should be String")
+        .min(3, "first name should not be less than 6 digits")
+        .max(10, "first name should not be greater than 10 digits")
+        .nullable()
+        .required("The new first_name is required"),
+
+      last_name: string()
+        .strict(true)
+        .typeError("The Last Name Should be String")
+        .nullable()
+        .min(3, "last name should not be less than 6 digits")
+        .max(10, "last name should not be greater than 10 digits")
+        .required("The new last_name is required"),
+
+      email: string()
+        .strict(true)
+        .typeError("The Email Should be String")
+        .email("It should be in the Email form")
+        .nullable()
+        .required("The new email is required"),
+
+      phone_number: string()
+        .phone("IN", "phone_number is invalid")
+        .nullable()
+        .typeError("The phone_number should be in string form")
+        .matches(
+          /^[(][0-9]{3}[)][-\s\.][0-9]{3}[-\s\.][0-9]{4}$/,
+          "the phone number should be in format (xxx) xxx xxxx"
+        )
+        .required("The new phone_number is required"),
+
+      location: string()
+        .strict(true)
+        .typeError("date_of_birth must be a string formate")
+        .nullable()
+        .required("The new location is required"),
+    })
+      .required("To edit You Should enter valid Info")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await userSchema.validate({ body: req.body });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+
+
+async function validateAddOrder(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    body: object({
+      address_id: number()
+        .typeError("address_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The address_id is required"),
+
+      payment_type: string()
+        .typeError("payment_type must be a string")
+        .nullable()
+        .required("The payment_type is required")
+    })
+      .required("The address_id and payment_type are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
   });
 
   try {
     const response = await validateSchema.validate({
       query: req.query,
+      body: req.body,
     });
     next();
   } catch (e: any) {
     return res.status(400).send(e.message);
   }
-
-
-
-
-  
 }
+  }
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -653,4 +786,7 @@ export default {
   ImageValidation,
   validateOrderStatus,
   validateOrderItem,
-};
+  changePasswordValidation,
+  UserAddressValidation,
+  validateAddOrder,
+}

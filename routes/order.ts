@@ -37,14 +37,7 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items)
         );
-      res.status(200).send({
-        function: "getOrdersInfo",
-        uid: req.uid,
-        o: Number(req.query.order_status),
-        l: Number(req.query.page_number),
-        P: Number(req.query.number_of_items),
-        data:data
-      });
+      res.status(200).send({data});
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -73,4 +66,34 @@ router.get(
     }
   }
 );
+
+
+
+router.post("/new_address", 
+authorization.authenticateUser,validate.UserAddressValidation,async (req: Request, res: Response)=> {
+    try {
+        const instance = CUser.getInstance();
+ const data= await instance.addOrderAddress(req.body,req.uid)
+        res.status(200).send(
+           data);
+    } catch (error) {
+       
+        res.status(500).end();
+    }
+});
+
+
+
+router.post("/new_order", authorization.authenticateUser,validate.validateAddOrder,async (req: Request, res: Response)=> {
+    try {
+        const instance = CUser.getInstance();
+ const data= await instance.orderCheckOut(req.uid,Number(req.body.address_id),req.body.payment_type)
+        res.status(200).send(
+           data);
+    } catch (error) {
+        res.status(500).end();
+    }
+});
+
+
 export default router;

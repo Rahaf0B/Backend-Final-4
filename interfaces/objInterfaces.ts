@@ -75,6 +75,7 @@ export interface IAddress {
   location: string;
   phone_number: number;
   orders?: object[];
+  normal_uid:number;
 }
 
 export interface IProduct {
@@ -103,6 +104,7 @@ export interface IOrder {
   payment_type?: string;
   address_id?: number;
   order_items?: object[];
+  date?: Date | string;
 }
 
 export interface IOrder_item {
@@ -110,9 +112,11 @@ export interface IOrder_item {
   normal_uid: number;
   product_id: number;
   quantity: number;
-  item_price: number;
+  price: number;
   order_id?: number;
   image?:object;
+  name:string;
+  sub_title?: string;
 }
 
 export interface IWishlist {

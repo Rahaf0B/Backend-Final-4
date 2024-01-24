@@ -61,7 +61,7 @@ class Address extends Model<IAddress> implements IAddress {
 
   @AllowNull(false)
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.BIGINT,
   })
   declare phone_number: number;
 

@@ -1,5 +1,13 @@
 // import { auth } from "../firebaseConfig";
-import { INormal_user, IUser, IWishlist } from "../interfaces/objInterfaces";
+import {
+  IAddress,
+  INormal_user,
+  IOrder,
+  IOrder_item,
+  IProduct,
+  IUser,
+  IWishlist,
+} from "../interfaces/objInterfaces";
 import Session from "../models/Session";
 import User from "../models/User";
 import { v4 as uuidv4 } from "uuid";
@@ -17,9 +25,15 @@ import { promises } from "dns";
 import { cloudinaryImageUploadMethod } from "../middleware/imageuploader";
 import Image from "../models/Image";
 import Order from "../models/Order";
+import Address from "../models/Address";
+import Order_item from "../models/Order_item";
+import Product from "../models/Product";
+import cls from "cls-hooked";
+import { Sequelize } from "sequelize-typescript";
 
 export default class CUser {
   private static instance: CUser;
+  private sequelizeNameSpace = cls.createNamespace("userTransaction");
 
   private constructor() {}
 
@@ -125,9 +139,11 @@ export default class CUser {
           );
           if (validate) {
             delete userData.password;
+            delete userData.type;
             const [token, expirationDate] = await this.generateOrUpdateSession(
               userData.uid
             );
+            delete userData.uid;
             return [userData, token, expirationDate];
           } else {
             throw new Error("Invalid Data Try Again", {
@@ -301,7 +317,11 @@ export default class CUser {
     }
   }
 
-  async deleteFromCart(productId: number, cartId: number, trans: any) {
+  async deleteFromCart(
+    productId: number | number[],
+    cartId: number,
+    trans: any
+  ) {
     try {
       const cartProduct = await Product_cart.destroy({
         where: {
@@ -335,14 +355,70 @@ export default class CUser {
     }
   }
 
-  async decreaseOrDeleteFromCart(
+  async removeFromCart(
     productId: number,
-    optionType: string,
     userId: number,
     quantity?: number
   ): Promise<boolean> {
     try {
       const trans = await sequelizeConnection.sequelize.transaction();
+      try {
+        const value = await this.decreaseOrDeleteFromCart(
+          productId,
+          "delete",
+          userId,
+          trans
+        );
+        const commitTrans = await trans.commit();
+
+        return value;
+      } catch (error: any) {
+        await trans.rollback();
+
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async decreaseQuantityProductFromCart(
+    productId: number,
+    userId: number,
+    quantity?: number
+  ): Promise<boolean> {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+      try {
+        const value = await this.decreaseOrDeleteFromCart(
+          productId,
+          "decrease",
+          userId,
+          trans,
+          quantity
+        );
+        const commitTrans = await trans.commit();
+
+        return value;
+      } catch (error: any) {
+        await trans.rollback();
+
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async decreaseOrDeleteFromCart(
+    productId: number | number[],
+    optionType: string,
+    userId: number,
+    trans: any,
+    quantity?: number
+  ): Promise<boolean> {
+    try {
+      // const trans = await sequelizeConnection.sequelize.transaction();
 
       try {
         const cart = await Cart.findOne({
@@ -358,24 +434,18 @@ export default class CUser {
             await this.deleteFromCart(productId, cartInfo.cart_id, trans);
           } else if (optionType === "decrease") {
             await this.decreaseFromCart(
-              productId,
+              productId as number,
               cartInfo.cart_id,
               quantity,
               trans
             );
           }
-          try {
-            const commitTrans = await trans.commit();
 
-            return true;
-          } catch (error: any) {
-            throw new Error(error.message);
-          }
+          return true;
         } catch (error: any) {
           throw new Error(error.message);
         }
       } catch (error: any) {
-        await trans.rollback();
         throw new Error(error.message);
       }
     } catch (error: any) {
@@ -477,5 +547,256 @@ export default class CUser {
       ],*/
     });
     return orders;
+	}
+  async clearSession(userId: number) {
+    try {
+      const deleteSession = await Session.destroy({
+        where: {
+          uid: userId,
+        },
+      });
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+
+  async changePassword(passwords: any, userId: number): Promise<void> {
+    try {
+      const userData = await this.checkUserExists("uid", userId);
+      if (userData) {
+        try {
+          const validate = await bcrypt.compare(
+            passwords.old_password,
+            userData.password
+          );
+
+          if (
+            validate &&
+            passwords.new_password === passwords.confirm_password
+          ) {
+            const salt = bcrypt.genSaltSync(10);
+            const updatedPassword = bcrypt.hashSync(
+              passwords.new_password,
+              salt
+            );
+            try {
+              const updatedData = User.update(
+                { password: updatedPassword },
+                {
+                  where: {
+                    uid: userId,
+                  },
+                }
+              );
+              const clearedSession = this.clearSession(userId);
+              await Promise.all([updatedData, clearedSession]);
+            } catch (e: any) {
+              throw new Error(e.message);
+            }
+          } else {
+            throw new Error(
+              validate
+                ? "NewPass and the confirm pass are not the same"
+                : "Invalid password",
+              {
+                cause: "Validation Error",
+              }
+            );
+          }
+        } catch (e: any) {
+          if (e.cause === "Validation Error") {
+            throw new Error(e.message, {
+              cause: "Validation Error",
+            });
+          } else throw new Error(e);
+        }
+      }
+    } catch (e: any) {
+      if (e.cause === "Validation Error") {
+        throw new Error(e.message, {
+          cause: "Validation Error",
+        });
+      } else throw new Error(e);
+    }
+  }
+
+  async addOrderAddress(
+    data: Partial<IAddress>,
+    userId: number
+  ): Promise<number> {
+    try {
+      if (data.phone_number) {
+        data.phone_number = parseInt(
+          data.phone_number.toString().replace(/[()\s]/g, ""),
+          10
+        );
+      }
+
+      const addedAddress = await Address.create({
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        location: data.location,
+        phone_number: data.phone_number,
+        normal_uid: userId,
+      });
+      return addedAddress.toJSON().address_id;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async getProductIDAndInfoInCart(
+    userId: number,
+    trans: any
+  ): Promise<IOrder_item[]> {
+    try {
+      const data = await Product_cart.findAll({
+        attributes: [
+          "product_id",
+          "quantity",
+          "cart.normal_uid",
+          "product.name",
+          "product.sub_title",
+          "product.price",
+        ],
+        raw: true,
+        subQuery: false,
+        include: [
+          {
+            model: Cart,
+            attributes: [],
+            where: {
+              normal_uid: userId,
+            },
+          },
+          { model: Product, attributes: [] },
+        ],
+        transaction: trans,
+        lock: true,
+      });
+      return data as any;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async createUserOrderItems(
+    productsInfo: object[],
+    trans: any
+  ): Promise<object[]> {
+    try {
+      const addedOrderItems = await Order_item.bulkCreate(productsInfo, {
+        transaction: trans,
+      });
+      return addedOrderItems;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async createOrder(
+    userId: number,
+    addressId: number,
+    paymentType: string,
+    TotalPrice: number
+  ): Promise<IOrder> {
+    try {
+      const order = await Order.create({
+        normal_uid: userId,
+        address_id: addressId,
+        payment_status: true,
+        payment_type: paymentType,
+        total_price: TotalPrice,
+        status: 1,
+      });
+      return order;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async orderCheckOut(userId: number, addressId: number, paymentType: string) {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+      try {
+        try {
+          const productsInfo = await this.getProductIDAndInfoInCart(6, trans);
+
+          const instance = CProduct.getInstance();
+
+          const productIds = productsInfo.map((product) => product.product_id);
+          const productQuantity = productsInfo.map(
+            (product) => product.quantity
+          );
+          try {
+            const productInfoAfterEdit = await instance.decreaseProductAmount(
+              productIds,
+              productQuantity,
+              trans
+            );
+            const acceptedProductIds = productInfoAfterEdit.map(
+              (product) => product.product_id
+            );
+            const acceptedProduct = productsInfo.filter((product) =>
+              acceptedProductIds.includes(product.product_id)
+            );
+
+            const totalPrice = acceptedProduct.reduce(
+              (a, b) => a + b.price * b.quantity,
+              0
+            );
+
+            try {
+              const order = await this.createOrder(
+                6,
+                1,
+                "paymentType",
+                totalPrice
+              );
+              acceptedProduct.forEach(
+                (product) => (product.order_id = order.order_id)
+              );
+              try {
+                const orderItemInfo = await this.createUserOrderItems(
+                  acceptedProduct,
+                  trans
+                );
+
+                try {
+                  const value = await this.decreaseOrDeleteFromCart(
+                    acceptedProductIds,
+                    "delete",
+                    6,
+                    trans
+                  );
+                  try {
+                    const commitTrans = await trans.commit();
+                  } catch (error: any) {
+                    throw new Error(error.message);
+                  }
+                } catch (error: any) {
+                  throw new Error(error.message);
+                }
+              } catch (error: any) {
+                throw new Error(error.message);
+              }
+            } catch (error: any) {
+              throw new Error(error.message);
+            }
+          } catch (error: any) {
+            throw new Error(error.message);
+          }
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      } catch (error: any) {
+        await trans.rollback();
+
+        throw new Error(error.message);
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
   }
 }

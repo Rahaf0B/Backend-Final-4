@@ -15,6 +15,8 @@ import { IOrder } from "../interfaces/objInterfaces";
 import Order_item from "./Order_item";
 import Address from "./Address";
 import Normal_User from "./Normal_user";
+import moment from "moment";
+import { NOW } from "sequelize";
 
 @Table({
   timestamps: false,
@@ -64,9 +66,20 @@ class Order extends Model<IOrder> implements IOrder {
 
   @AllowNull(false)
   @Column({
-    type: DataType.BOOLEAN,
+    type: DataType.STRING,
   })
   declare payment_type?: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.DATEONLY,
+    defaultValue:NOW
+  })
+  get date(): string {
+    return this.getDataValue("date")
+      ? moment(this.getDataValue("date"), "YYYY-MM-DD").format("YYYY-MM-DD")
+      : "";
+  }
 
   @AllowNull(false)
   @ForeignKey(() => Address)

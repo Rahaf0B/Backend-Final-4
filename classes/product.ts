@@ -18,7 +18,6 @@ import User from "../models/User";
 import product_wishlist from "../models/product_wishlist";
 import Product_cart from "../models/Product_cart";
 import Cart from "../models/Cart";
-import Order from "../models/Order";
 import Order_item from "../models/Order_item";
 
 export default class CProduct {
@@ -855,6 +854,7 @@ export default class CProduct {
       where: { wishlist_id: wishlistId.dataValues.wishlist_id },
     });
     const items_count=data.length;
+
     const product_id_all = data.map((value) => value.dataValues.product_id);
     const items = await Product.findAll({
       where: {
@@ -1158,5 +1158,37 @@ export default class CProduct {
     });
     console.log(items);
     return [items_count, items];
+  }
+
+  async decreaseProductAmount(
+    productId: number[],
+    quantity: number[],
+    trans: any
+  ): Promise<Partial<IProduct>[]> {
+    try {
+      let effectedProduct = [];
+      for (let i = 0; i < productId.length; i++) {
+        const [productDec] = await Product.decrement("quantity", {
+          by: quantity[i],
+
+          where: {
+            [Op.and]: [
+              { product_id: productId[i] },
+              { quantity: { [Op.gte]: quantity[i] } },
+            ],
+          },
+          transaction: trans,
+        });
+        const effectedOrNot = productDec[1] as unknown;
+        if (effectedOrNot == 1) {
+          const product = await Product.findByPk(productId[i], {
+            attributes: ["product_id"],
+          });
+
+          effectedProduct.push(product.toJSON());
+        }
+      }
+      return effectedProduct;
+    } catch (error) {}
   }
 }
