@@ -694,7 +694,7 @@ export default class CUser {
       });
       for (const item of addedOrderItems) {
         const orderItemImages = await Image.update(
-          { order_item_id: item.order_id },
+          { order_item_id: item.order_item_id },
           {
             where: { [Op.and]: [{ type: 1 }, { product_id: item.product_id }] },
           }
