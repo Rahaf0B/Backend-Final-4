@@ -95,6 +95,26 @@ router.post(
   }
 );
 
+
+
+router.get(
+  "/address",
+  authorization.authenticateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+
+      const dataInfo = await instance.getUserAddresses( req.uid);
+      res.status(200).send(dataInfo);
+    } catch (e: any) {
+      if (e?.cause == "Validation Error") {
+        res.status(400).send(e.message);
+      } else {
+        res.status(500).send();
+      }
+    }
+  }
+);
 router.patch(
   "/change-password",
   validation.changePasswordValidation,
@@ -104,7 +124,7 @@ router.patch(
       const instance = CUser.getInstance();
 
       const dataInfo = await instance.changePassword(req.body, req.uid);
-      res.status(200).cookie("session_token", dataInfo).send();
+      res.status(200).cookie("session_token", "").send();
     } catch (e: any) {
       if (e?.cause == "Validation Error") {
         res.status(400).send(e.message);

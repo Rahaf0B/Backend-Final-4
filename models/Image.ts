@@ -98,10 +98,16 @@ class Image extends Model<IImage> implements IImage {
 
   @BelongsTo(() => Product, {
     foreignKey: "product_id",
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE",
   })
   declare product?: Product;
+
+
+
+  @ForeignKey(() => Order_item)
+  @Column({
+    type: DataType.INTEGER,
+  })
+  declare order_item_id?: number;
 
   @BelongsTo(() => Order_item, {
     foreignKey: "order_item_id",

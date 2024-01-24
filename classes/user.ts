@@ -30,6 +30,7 @@ import Order_item from "../models/Order_item";
 import Product from "../models/Product";
 import cls from "cls-hooked";
 import { Sequelize } from "sequelize-typescript";
+import { Op } from "sequelize";
 
 export default class CUser {
   private static instance: CUser;
@@ -690,6 +691,10 @@ export default class CUser {
       const addedOrderItems = await Order_item.bulkCreate(productsInfo, {
         transaction: trans,
       });
+      for (const item of addedOrderItems) {
+const orderItemImages= await Image.update({order_item_id:item.order_id},{where:{[Op.and]:[{type:1},{product_id:item.product_id}]}});
+
+      }
       return addedOrderItems;
     } catch (error: any) {
       throw new Error(error.message);
@@ -722,7 +727,7 @@ export default class CUser {
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
         try {
-          const productsInfo = await this.getProductIDAndInfoInCart(6, trans);
+          const productsInfo = await this.getProductIDAndInfoInCart(userId, trans);
 
           const instance = CProduct.getInstance();
 
@@ -750,9 +755,9 @@ export default class CUser {
 
             try {
               const order = await this.createOrder(
-                6,
-                1,
-                "paymentType",
+                userId,
+                addressId,
+                paymentType,
                 totalPrice
               );
               acceptedProduct.forEach(
@@ -764,21 +769,14 @@ export default class CUser {
                   trans
                 );
 
-                try {
                   const value = await this.decreaseOrDeleteFromCart(
                     acceptedProductIds,
                     "delete",
                     6,
                     trans
                   );
-                  try {
                     const commitTrans = await trans.commit();
-                  } catch (error: any) {
-                    throw new Error(error.message);
-                  }
-                } catch (error: any) {
-                  throw new Error(error.message);
-                }
+
               } catch (error: any) {
                 throw new Error(error.message);
               }
@@ -800,4 +798,15 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
+
+
+async getUserAddresses(userId:number){
+try{
+  const userAddresses = await Address.findAll({where:{normal_uid:userId},attributes:{exclude:["normal_uid"]}});
+  return userAddresses;
+}catch (error:any) {
+  throw new Error(error.message)
+}}
+
+
 }
