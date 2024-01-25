@@ -311,27 +311,44 @@ router.get(
   }
 );
 
-
-
 router.post(
-  "/brand",upload("brand").array("images"),validate.ImageValidation,validate.validateAddBrand,
+  "/new-brand",
+  upload("brand").array("images"),
+  validate.ImageValidation,
+  validate.validateAddBrandOrCategory,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
-      const dataInfo = await instance.addBrand(req.body,req.files);
+      const dataInfo = await instance.addBrand(req.body, req.files);
 
       res.status(200).send(dataInfo);
-    } catch (error:any) {
-      if(error.cause=="existing"){
-        
+    } catch (error: any) {
+      if (error.cause == "existing") {
         res.status(500).send(error.message);
-
       }
       res.status(500).end();
     }
   }
 );
 
+router.post(
+  "/new-category",
+  upload("brand").array("images"),
+  validate.ImageValidation,
+  validate.validateAddBrandOrCategory,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const dataInfo = await instance.addCategory(req.body, req.files);
 
+      res.status(200).send(dataInfo);
+    } catch (error: any) {
+      if (error.cause == "existing") {
+        res.status(500).send(error.message);
+      }
+      res.status(500).end();
+    }
+  }
+);
 
 export default router;
