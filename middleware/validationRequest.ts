@@ -551,7 +551,7 @@ async function ImageValidation(
   res: Response,
   next: NextFunction
 ) {
-  let userSchema = array()
+  let imageSchema = array()
     .of(
       object().shape({
         mimetype: string()
@@ -565,7 +565,7 @@ async function ImageValidation(
     .required("At least one image is required");
 
   try {
-    const response = await userSchema.validate(req.files, {
+    const response = await imageSchema.validate(req.files, {
       abortEarly: false,
     });
 
@@ -806,6 +806,50 @@ async function validateReview(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function validateAddBrand(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    body: object({
+      discount_id: string()
+        .typeError("discount_id must be a number")
+        .nullable()
+        .required("The discount_id is required")
+        .transform(function (value) {
+          return Number(value);
+        }),
+
+      name: string()
+        .typeError("brand name must be a string")
+        .nullable()
+        .required("The brand name is required"),
+
+      image: object({
+        name: string()
+          .typeError("image name must be a string")
+          .nullable()
+          .required("The image name is required"),
+      }),
+    })
+      .required("The discount_id and name are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -828,4 +872,5 @@ export default {
   changePasswordValidation,
   UserAddressValidation,
   validateAddOrder,
+  validateAddBrand,
 };

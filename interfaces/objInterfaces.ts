@@ -16,7 +16,7 @@ export interface INormal_user {
   normal_uid?: number;
   date_of_birth?: Date | string;
   phone_number?: number;
-  image_id?: object;
+  image_id?: object | IImage ;
   uid?:number;
 }
 
@@ -36,7 +36,7 @@ export interface IImage {
 export interface IBrand {
   brand_id?: number;
   name: string;
-  image?: object;
+  image?: IImage ;
   products?: object[];
   discount_id?: number
 }
@@ -44,7 +44,7 @@ export interface IBrand {
 export interface ICategory {
   category_id?: number;
   name: string;
-  image?: object;
+  image?: object | IImage;
   user_id?: string;
   brand_id?: number;
   product_id?: number;
@@ -88,7 +88,7 @@ export interface IProduct {
   quantity: number;
   brand_id?: number;
   price: number;
-  image: object[];
+  image: object[] | IImage [];
   created_at: string;
   rating?: object[];
   Order_item?: object[];
@@ -115,7 +115,7 @@ export interface IOrder_item {
   quantity: number;
   price: number;
   order_id?: number;
-  image?:object;
+  image?:object | IImage [];
   name:string;
   sub_title?: string;
 }

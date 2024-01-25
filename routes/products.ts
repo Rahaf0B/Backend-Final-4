@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import CProduct from "../classes/product";
 import authorization from "../middleware/authorization";
 import validate from "../middleware/validationRequest";
+import { upload } from "../middleware/imageuploader";
 const router = Router();
 
 router.use(cookieParser());
@@ -183,8 +184,7 @@ router.get(
       );
       res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).end();
     }
   }
 );
@@ -310,5 +310,28 @@ router.get(
     }
   }
 );
+
+
+
+router.post(
+  "/brand",upload("brand").array("images"),validate.ImageValidation,validate.validateAddBrand,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const dataInfo = await instance.addBrand(req.body,req.files);
+
+      res.status(200).send(dataInfo);
+    } catch (error:any) {
+      if(error.cause=="existing"){
+        
+        res.status(500).send(error.message);
+
+      }
+      res.status(500).end();
+    }
+  }
+);
+
+
 
 export default router;

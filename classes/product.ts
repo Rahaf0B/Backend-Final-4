@@ -1,7 +1,13 @@
 import { Op, where } from "sequelize";
 import Product from "../models/Product";
 import { Sequelize } from "sequelize-typescript";
-import { IBrand, ICategory, IProduct } from "../interfaces/objInterfaces";
+import {
+  IBrand,
+  ICategory,
+  IDiscount,
+  IImage,
+  IProduct,
+} from "../interfaces/objInterfaces";
 import sequelizeConnection from "../conections/sequelizeConnection";
 import Image from "../models/Image";
 import Product_wishlist from "../models/product_wishlist";
@@ -21,6 +27,8 @@ import Cart from "../models/Cart";
 import Order_item from "../models/Order_item";
 import Order from "../models/Order";
 import Address from "../models/Address";
+import Product_discount from "../models/Product_discount";
+import { cloudinaryImageUploadMethod } from "../middleware/imageuploader";
 
 export default class CProduct {
   private static instance: CProduct;
@@ -1136,5 +1144,101 @@ export default class CProduct {
       }
       return effectedProduct;
     } catch (error) {}
+  }
+
+  async addProductDiscount(id: any) {
+    try {
+      const produces = await Product.findAll({
+        attributes: ["product_id"],
+        where: {
+          [Op.or]: [
+            { brand_id: id.brandId ? id.brandId : 0 },
+            { category_id: id.categoryId ? id.categoryId : 0 },
+            { product_id: id.productId ? id.productId : 0 },
+          ],
+        },
+      });
+
+      const productId = produces.map((value) => {
+        return { product_id: value.product_id, discount_id: id.discountId };
+      });
+      const data = await Product_discount.bulkCreate(productId);
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async addDiscount(dataToAdd: IDiscount) {
+    try {
+      const data = await Discount.create({
+        value: dataToAdd.value,
+        type: dataToAdd.type,
+      });
+
+      if (dataToAdd.brands) {
+      }
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async addImage(image: Partial<IImage>[], imageFile: any) {
+    try {
+      const urls = [];
+
+      let files: any;
+      files = imageFile;
+      for (const file of files) {
+        const { path } = file;
+
+        const newPath = await cloudinaryImageUploadMethod(path);
+        urls.push(newPath);
+      }
+
+      const multiImage = urls.map((url: any) => url.res);
+      image.map((image: any, index) => (image.url = multiImage[index]));
+      const data = await Image.bulkCreate(image);
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async addBrand(dataToAdd: Partial<IBrand>, imageFile: any) {
+    try {
+      const data = await Brand.findOrCreate({
+        defaults: { name: dataToAdd.name },
+        where: {
+          name: dataToAdd.name,
+        },
+      });
+      if (data[1] == false) {
+        throw new Error("brand already exists", { cause: "existing" });
+      } else {
+        if (imageFile) {
+          await this.addImage(
+            [
+              {
+                type: true,
+                brand_id: data[0].toJSON().brand_id,
+                name: dataToAdd.image.name,
+              },
+            ],
+            imageFile
+          );
+        }
+        if (dataToAdd.discount_id) {
+          await this.addProductDiscount({
+            brandId: data[0].toJSON().brand_id,
+            discountId: Number(dataToAdd.discount_id),
+          });
+        }
+        return data;
+      }
+    } catch (error: any) {
+      if (error.cause == "existing") {
+        throw new Error(error.message, { cause: error.cause });
+      }
+      throw new Error(error.message);
+    }
   }
 }
