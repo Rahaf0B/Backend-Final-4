@@ -10,6 +10,7 @@ import {
   BelongsTo,
   AutoIncrement,
   BelongsToMany,
+  HasMany,
 } from "sequelize-typescript";
 import { IWishlist } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
@@ -46,6 +47,8 @@ class Wishlist extends Model<IWishlist> implements IWishlist {
   
   @BelongsToMany(() => Product, () => Product_wishlist)
   product: Product[];
+  @HasMany(() => Product_wishlist, { foreignKey: "wishlist_id" })
+  declare product_wishlist: Product_wishlist[];
 }
 
 export default Wishlist;

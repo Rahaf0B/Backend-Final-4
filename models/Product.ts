@@ -120,9 +120,14 @@ class Product extends Model<IProduct> implements IProduct {
 
   @BelongsToMany(() => Wishlist, () => Product_wishlist)
   declare wishlist?: Wishlist[];
+  @HasMany(() => Product_wishlist, { foreignKey: "product_id" })
+  declare product_wishlist?: Product_wishlist[];
 
   @BelongsToMany(() => Discount, () => Product_discount)
   declare discount?: Discount[];
+  @HasMany(() => Product_discount, { foreignKey: "product_id" })
+  declare product_discount?: Product_discount[];
+
 
   @BelongsToMany(() => Cart, () => Product_cart)
   declare cart?: Cart[];
