@@ -806,7 +806,7 @@ async function validateReview(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function validateAddBrand(
+async function validateAddBrandOrCategory(
   req: Request,
   res: Response,
   next: NextFunction
@@ -824,7 +824,7 @@ async function validateAddBrand(
       name: string()
         .typeError("brand name must be a string")
         .nullable()
-        .required("The brand name is required"),
+        .required("The brand or category name is required"),
 
       image: object({
         name: string()
@@ -872,5 +872,5 @@ export default {
   changePasswordValidation,
   UserAddressValidation,
   validateAddOrder,
-  validateAddBrand,
+  validateAddBrandOrCategory,
 };

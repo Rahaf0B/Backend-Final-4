@@ -1241,4 +1241,43 @@ export default class CProduct {
       throw new Error(error.message);
     }
   }
+
+  async addCategory(dataToAdd: Partial<IBrand>, imageFile: any) {
+    try {
+      const data = await Category.findOrCreate({
+        defaults: { name: dataToAdd.name },
+        where: {
+          name: dataToAdd.name,
+        },
+      });
+      if (data[1] == false) {
+        throw new Error("category already exists", { cause: "existing" });
+      } else {
+        if (imageFile) {
+          await this.addImage(
+            [
+              {
+                type: true,
+                category_id: data[0].toJSON().category_id,
+                name: dataToAdd.image.name,
+              },
+            ],
+            imageFile
+          );
+        }
+        if (dataToAdd.discount_id) {
+          await this.addProductDiscount({
+            categoryId: data[0].toJSON().category_id,
+            discountId: Number(dataToAdd.discount_id),
+          });
+        }
+        return data;
+      }
+    } catch (error: any) {
+      if (error.cause == "existing") {
+        throw new Error(error.message, { cause: error.cause });
+      }
+      throw new Error(error.message);
+    }
+  }
 }
