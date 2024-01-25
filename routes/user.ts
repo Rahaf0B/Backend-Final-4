@@ -113,6 +113,7 @@ router.get(
     }
   }
 );
+
 router.patch(
   "/change-password",
   validation.changePasswordValidation,
@@ -133,6 +134,20 @@ router.patch(
   }
 );
 
+router.post(
+  "/add-reviews",
+  authorization.authenticateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+
+      const dataInfo = await instance.addUserReview(req.body, req.uid);
+      res.status(200).send();
+    } catch (e: any) {
+      res.status(500).send();
+    }
+  }
+);
 router.post(
   "/logout",
   authorization.authenticateUser,

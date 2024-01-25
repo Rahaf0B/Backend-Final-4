@@ -649,11 +649,10 @@ async function changePasswordValidation(
   }
 }
 async function validateOrderItem(
-  req:Request,
-  res:Response,
-  next:NextFunction
-){
-
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   let validateSchema = object({
     query: object({
       order_id: number()
@@ -662,20 +661,18 @@ async function validateOrderItem(
         .nullable()
         .required("The order_id is required")
         .min(0, "The order_id must not be grater than 0"),
-    
-    
-      }).noUnknown(true),
+    }).noUnknown(true),
+  });
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+      body: req.body,
     });
-    try {
-      const response = await validateSchema.validate({
-        query: req.query,
-        body: req.body,
-      });
-      next();
-    } catch (e: any) {
-      return res.status(400).send(e.message);
-    }
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
   }
+}
 
 async function UserAddressValidation(
   req: Request,
@@ -737,9 +734,6 @@ async function UserAddressValidation(
   }
 }
 
-
-
-
 async function validateAddOrder(
   req: Request,
   res: Response,
@@ -756,7 +750,7 @@ async function validateAddOrder(
       payment_type: string()
         .typeError("payment_type must be a string")
         .nullable()
-        .required("The payment_type is required")
+        .required("The payment_type is required"),
     })
       .required("The address_id and payment_type are required")
       .nullable()
@@ -774,7 +768,44 @@ async function validateAddOrder(
     return res.status(400).send(e.message);
   }
 }
-  
+
+async function validateReview(req: Request, res: Response, next: NextFunction) {
+  let validateSchema = object({
+    body: object({
+      value: number()
+        .typeError("value must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The value is required"),
+
+      product_id: number()
+        .typeError("product_id must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The product_id is required"),
+
+      Comment: string()
+        .typeError("Comment must be a string")
+        .nullable()
+        .required("The Comment is required"),
+    })
+      .required("The address_id and payment_type are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -797,4 +828,4 @@ export default {
   changePasswordValidation,
   UserAddressValidation,
   validateAddOrder,
-}
+};
