@@ -816,7 +816,6 @@ async function validateAddBrandOrCategory(
       discount_id: string()
         .typeError("discount_id must be a number")
         .nullable()
-        .required("The discount_id is required")
         .transform(function (value) {
           return Number(value);
         }),
