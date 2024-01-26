@@ -88,7 +88,7 @@ export interface IProduct {
   quantity: number;
   brand_id?: number;
   price: number;
-  image: object[] | IImage [];
+  image: IImage [];
   created_at: string;
   rating?: object[];
   Order_item?: object[];

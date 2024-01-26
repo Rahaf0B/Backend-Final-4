@@ -77,9 +77,11 @@ class Product extends Model<IProduct> implements IProduct {
     type: DataType.DATEONLY,
   })
   get created_at(): string {
-    return moment(this.getDataValue("created_at"), "YYYY-MM-DD").format(
-      "YYYY-MM-DD"
-    );
+    return this.getDataValue("created_at")
+    ? moment(this.getDataValue("created_at"), "YYYY-MM-DD").format(
+        "YYYY-MM-DD"
+      )
+    : "";
   }
   set created_at(value: string) {
     this.setDataValue("created_at", value);
@@ -134,10 +136,10 @@ class Product extends Model<IProduct> implements IProduct {
   @HasMany(() => Product_cart, { foreignKey: "product_id" })
   declare product_cart?: Product_cart[];
 
-  @BeforeCreate
-  static setCreatedDate(instance: Product) {
-    instance.created_at = new Date().getDate().toString();
-  }
+  // @BeforeCreate
+  // static setCreatedDate(instance: Product) {
+  //   instance.created_at = new Date().getDate().toString();
+  // }
 }
 
 export default Product;
