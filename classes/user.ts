@@ -421,8 +421,6 @@ export default class CUser {
     quantity?: number
   ): Promise<boolean> {
     try {
-      // const trans = await sequelizeConnection.sequelize.transaction();
-
       try {
         const cart = await Cart.findOne({
           where: { normal_uid: userId },
@@ -545,8 +543,6 @@ export default class CUser {
         "total_price",
         "status",
         "payment_status",
-        "payment_type",
-        "address_id",
       ],
     });
     return orders;
