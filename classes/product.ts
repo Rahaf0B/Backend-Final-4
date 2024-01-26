@@ -95,6 +95,7 @@ export default class CProduct {
         "name",
         "sub_title",
         "price",
+        "quantity",
         [
           Sequelize.fn(
             "SUM",
@@ -191,6 +192,7 @@ export default class CProduct {
         "name",
         "sub_title",
         "price",
+        "quantity",
         [
           Sequelize.fn(
             "SUM",
@@ -400,6 +402,7 @@ export default class CProduct {
           "name",
           "sub_title",
           "price",
+          "quantity",
           [
             Sequelize.fn(
               "SUM",
@@ -564,6 +567,7 @@ export default class CProduct {
         "name",
         "sub_title",
         "price",
+        "quantity",
         [
           Sequelize.fn(
             "SUM",
@@ -677,6 +681,7 @@ export default class CProduct {
         "name",
         "sub_title",
         "price",
+        "quantity",
         [
           Sequelize.fn(
             "SUM",
@@ -756,6 +761,7 @@ export default class CProduct {
         "name",
         "sub_title",
         "price",
+        "quantity",
         [
           Sequelize.fn(
             "SUM",
@@ -1070,6 +1076,7 @@ export default class CProduct {
       subQuery: false,
       attributes: [
         "total_price",
+        "payment_type",
         [Sequelize.col("address.first_name"), "first_name"],
         [Sequelize.col("address.last_name"), "last_name"],
         [Sequelize.col("address.email"), "email"],

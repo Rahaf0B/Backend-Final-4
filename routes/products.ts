@@ -333,7 +333,7 @@ router.post(
 
 router.post(
   "/new-category",
-  upload("brand").array("images"),
+  upload("category").array("images"),
   validate.ImageValidation,
   validate.validateAddBrandOrCategory,
   async (req: Request, res: Response) => {
@@ -353,7 +353,7 @@ router.post(
 
 router.post(
   "/new-product",
-  upload("brand").array("images"),
+  upload("products").array("images"),
   validate.ImageValidation,
 
   async (req: Request, res: Response) => {
