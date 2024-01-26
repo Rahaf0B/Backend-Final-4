@@ -351,4 +351,25 @@ router.post(
   }
 );
 
+router.post(
+  "/new-product",
+  upload("brand").array("images"),
+  validate.ImageValidation,
+
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CProduct.getInstance();
+      const dataInfo = await instance.addProduct(req.body, req.files);
+
+      res.status(200).send(dataInfo);
+    } catch (error: any) {
+      console.error(error);
+      if (error.cause == "existing") {
+        res.status(500).send(error.message);
+      }
+      res.status(500).end();
+    }
+  }
+);
+
 export default router;

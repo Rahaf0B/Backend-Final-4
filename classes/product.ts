@@ -1148,7 +1148,7 @@ export default class CProduct {
 
   async addProductDiscount(id: any) {
     try {
-      const produces = await Product.findAll({
+      const products = await Product.findAll({
         attributes: ["product_id"],
         where: {
           [Op.or]: [
@@ -1159,7 +1159,7 @@ export default class CProduct {
         },
       });
 
-      const productId = produces.map((value) => {
+      const productId = products.map((value) => {
         return { product_id: value.product_id, discount_id: id.discountId };
       });
       const data = await Product_discount.bulkCreate(productId);
@@ -1232,7 +1232,7 @@ export default class CProduct {
             discountId: Number(dataToAdd.discount_id),
           });
         }
-        return data;
+        return data[0];
       }
     } catch (error: any) {
       if (error.cause == "existing") {
@@ -1271,12 +1271,61 @@ export default class CProduct {
             discountId: Number(dataToAdd.discount_id),
           });
         }
-        return data;
+        return data[0];
       }
     } catch (error: any) {
       if (error.cause == "existing") {
         throw new Error(error.message, { cause: error.cause });
       }
+      throw new Error(error.message);
+    }
+  }
+
+  async addProduct(dataToAdd: Partial<IProduct &IImage&IDiscount>, imageFile: any) {
+    try {
+      
+      const data = await Product.findOrCreate({
+        defaults: {
+          name: dataToAdd.name,
+          created_at: dataToAdd.created_at,
+          sub_title: dataToAdd.sub_title ? dataToAdd.sub_title : null,
+          description: dataToAdd.description ? dataToAdd.description : null,
+          category_id: dataToAdd.category_id
+            ? Number(dataToAdd.category_id)
+            : null,
+          brand_id: dataToAdd.brand_id ? Number(dataToAdd.brand_id) : null,
+          price: Number(dataToAdd.price),
+          quantity: dataToAdd.quantity ? Number(dataToAdd.quantity) : 0,
+       
+        },
+        where: {
+          name: dataToAdd.name,
+        },
+      });
+     
+      
+      if (data[1] == false) {
+        throw new Error("product already exists", { cause: "existing" });
+      } else {
+        if (imageFile) {
+          const imageDate = Object.values(dataToAdd.image).map((value, index)  => {
+            return {
+              product_id: data[0].toJSON().product_id,
+              type: value.type,
+              name: value.name,
+            };
+          });
+          await this.addImage(imageDate, imageFile);
+        }
+        if (dataToAdd.discount_id) {
+          await this.addProductDiscount({
+            productId: data[0].toJSON().product_id,
+            discountId: Number(dataToAdd.discount_id),
+          });
+        }
+        return data[0];
+      }
+    } catch (error: any) {
       throw new Error(error.message);
     }
   }
