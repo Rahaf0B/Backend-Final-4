@@ -826,35 +826,50 @@ export default class CProduct {
     } catch (e: any) {}
   }
 
-  async getProductRatings(productId: number) {
-    let ratings = await Rating.findAll({
-      where: { product_id: productId },
-      include: {
-        model: Normal_User,
-        attributes: ["normal_uid"], //do not edit
-        where: {
-          normal_uid: Sequelize.col("Rating.normal_uid"),
-        },
-        include: [
-          {
-            model: User,
-            attributes: ["first_name", "last_name"],
-            where: {
-              uid: Sequelize.col("Rating.normal_uid"),
-            },
-          },
-          {
-            model: Image,
-            required: false,
-            nested: true,
-            attributes: ["image_id", "name", "url"],
-            subQuery: false,
-          },
+  async getProductCountRating(productId: number) {
+    try {
+      const data = await Rating.findAll({
+        attributes: [
+          "value",
+          [Sequelize.fn("COUNT", Sequelize.col("rating.value")), "countRating"],
         ],
-      },
-    });
+        where: { product_id: productId },
+        group: ["value"],
+      });
+      return data;
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+  async getProductRatings(productId: number) {
+    try {
+      const countRating = await this.getProductCountRating(productId);
 
-    return ratings;
+      let ratings = await Rating.findAll({
+        where: { product_id: productId },
+        attributes: [
+          "rating_id",
+          "value",
+          "comment",
+          "date",
+          "user.user.first_name",
+          "user.user.last_name",
+        ],
+        raw: true,
+        nest: true,
+        include: {
+          model: Normal_User,
+          subQuery: false,
+          attributes: [],
+          include: [{ subQuery: false, model: User, attributes: [] }],
+        },
+      });
+
+      return [countRating, ratings];
+    } catch (error: any) {
+      console.error(error);
+      throw new Error(error.message);
+    }
   }
 
   async getProductsInWishlist(
@@ -1288,9 +1303,11 @@ export default class CProduct {
     }
   }
 
-  async addProduct(dataToAdd: Partial<IProduct &IImage&IDiscount>, imageFile: any) {
+  async addProduct(
+    dataToAdd: Partial<IProduct & IImage & IDiscount>,
+    imageFile: any
+  ) {
     try {
-      
       const data = await Product.findOrCreate({
         defaults: {
           name: dataToAdd.name,
@@ -1303,25 +1320,25 @@ export default class CProduct {
           brand_id: dataToAdd.brand_id ? Number(dataToAdd.brand_id) : null,
           price: Number(dataToAdd.price),
           quantity: dataToAdd.quantity ? Number(dataToAdd.quantity) : 0,
-       
         },
         where: {
           name: dataToAdd.name,
         },
       });
-     
-      
+
       if (data[1] == false) {
         throw new Error("product already exists", { cause: "existing" });
       } else {
         if (imageFile) {
-          const imageDate = Object.values(dataToAdd.image).map((value, index)  => {
-            return {
-              product_id: data[0].toJSON().product_id,
-              type: value.type,
-              name: value.name,
-            };
-          });
+          const imageDate = Object.values(dataToAdd.image).map(
+            (value, index) => {
+              return {
+                product_id: data[0].toJSON().product_id,
+                type: value.type,
+                name: value.name,
+              };
+            }
+          );
           await this.addImage(imageDate, imageFile);
         }
         if (dataToAdd.discount_id) {

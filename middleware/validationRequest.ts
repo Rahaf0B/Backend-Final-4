@@ -13,7 +13,7 @@ async function UserCreateAccountValidation(
       first_name: string()
         .strict(true)
         .typeError("The First Name Should be String")
-        .min(3, "first name should not be less than 6 digits")
+        .min(3, "first name should not be less than 3 digits")
         .max(10, "first name should not be greater than 10 digits")
         .nullable()
         .required("The First Name is required"),
@@ -22,7 +22,7 @@ async function UserCreateAccountValidation(
         .strict(true)
         .typeError("The Last Name Should be String")
         .nullable()
-        .min(3, "last name should not be less than 6 digits")
+        .min(3, "last name should not be less than 3 digits")
         .max(10, "last name should not be greater than 10 digits")
         .required("The Last Name is required"),
 

@@ -281,11 +281,14 @@ router.get(
 router.get("/ratings/:product_id", async (req: Request, res: Response) => {
   try {
     const productId = Number(req.params.product_id);
+    console.log(productId);
     const instance = CProduct.getInstance();
-    const dataInfo = await instance?.getProductRatings(productId);
+    const [countRating, dataInfo] = await instance?.getProductRatings(
+      Number(productId)
+    );
     res.status(200).send({
-      function: "getProductsRatings",
-      dataInfo: dataInfo,
+      countRating: countRating,
+      ratingData: dataInfo,
     });
   } catch (error) {
     res.status(500).end();

@@ -13,6 +13,8 @@ import {
 import { IRating } from "../interfaces/objInterfaces";
 import Normal_User from "./Normal_user";
 import Product from "./Product";
+import { NOW } from "sequelize";
+import moment from "moment";
 
 @Table({
   timestamps: false,
@@ -67,6 +69,18 @@ class Rating extends Model<IRating> implements IRating {
     type: DataType.STRING,
   })
   declare comment?: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.DATEONLY,
+    defaultValue:NOW
+  })
+  get date(): string {
+    return this.getDataValue("date")
+      ? moment(this.getDataValue("date"), "YYYY-MM-DD").format("YYYY-MM-DD")
+      : "";
+  }
+
 }
 
 export default Rating;

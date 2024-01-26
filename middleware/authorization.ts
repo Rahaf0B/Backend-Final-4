@@ -12,7 +12,11 @@ async function checkExistSession(
     next();
   } else {
     try {
-      return await authenticateUser(req, res, next);
+      const returnreq=await authenticateUser(req, res, next);
+      if (returnreq.statusCode==401){
+        req.uid = 0;
+        next();
+      }else return returnreq;
     } catch (e: any) {
       return res.status(500);
     }
@@ -41,7 +45,7 @@ async function authenticateUser(
         next();
       }
     } catch (e: any) {
-      return res.status(500);
+      return res.status(500).end();
     }
   }
 }

@@ -66,6 +66,8 @@ export interface IRating {
   value: number;
   product_id: number;
   comment?:string;
+  date?: Date | string;
+
 }
 
 export interface IAddress {
