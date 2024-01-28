@@ -11,23 +11,7 @@ router.use(cookieParser());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-//getAllProducts
-router.get("/products", (req: Request, res: Response) => {
-  try {
-    const categoryName = req.query.category;
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getAllItems",
-      categoryName: categoryName,
-      pageNumberp: pageNumber,
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-//getMostPopulurProducts
+//get the Most Popular Products
 router.get(
   "/popular",
   authorization.checkExistSession,
@@ -137,37 +121,6 @@ router.get(
     }
   }
 );
-
-//getHandpickedCategories
-router.get(
-  "/handpicked-categories/:number_of_categories",
-  (req: Request, res: Response) => {
-    try {
-      const numberOfCategories = req.params.number_of_categories;
-      res.status(200).send({
-        function: "getHandpickedCategories",
-        numberOfCategories: numberOfCategories,
-      });
-    } catch (error) {
-      res.status(500).end();
-    }
-  }
-);
-
-//getHandpickedProductsByCategoryName
-router.get("/category/handpicked", (req: Request, res: Response) => {
-  try {
-    const categoryID = req.query.category;
-    const pageNumber = req.query.page_number;
-    res.status(200).send({
-      function: "getHandpickedProductsByCategoryName",
-      categoryID: categoryID,
-      pageNumber: pageNumber,
-    });
-  } catch (error) {
-    res.status(500).end();
-  }
-});
 
 //getLimitedEditionProducts
 router.get(
@@ -294,6 +247,7 @@ router.get("/ratings/:product_id", async (req: Request, res: Response) => {
   }
 });
 
+//get all products
 router.get(
   "/all",
   authorization.checkExistSession,
@@ -312,7 +266,9 @@ router.get(
     }
   }
 );
+/*
 
+// add new brand
 router.post(
   "/new-brand",
   upload("brand").array("images"),
@@ -333,6 +289,8 @@ router.post(
   }
 );
 
+
+//add new category
 router.post(
   "/new-category",
   upload("category").array("images"),
@@ -353,6 +311,8 @@ router.post(
   }
 );
 
+
+//add new product
 router.post(
   "/new-product",
   upload("products").array("images"),
@@ -372,5 +332,5 @@ router.post(
     }
   }
 );
-
+*/
 export default router;

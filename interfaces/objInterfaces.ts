@@ -120,6 +120,7 @@ export interface IOrder_item {
   image?:object | IImage [];
   name:string;
   sub_title?: string;
+  discount_value?:number;
 }
 
 export interface IWishlist {

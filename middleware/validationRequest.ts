@@ -239,9 +239,9 @@ async function validateTextSearch(
     query: object({
       search_value: string()
         .strict(true)
-        .typeError("The Last Name Should be String")
+        .typeError("The search_value Should be String")
         .nullable()
-        .required("The Last Name is required"),
+        .required("The search_value is required"),
 
       page_number: number()
         .typeError("page_number must be a number")
@@ -308,10 +308,10 @@ async function validateProductId(
   let validateSchema = object({
     params: object({
       product_id: number()
-        .typeError("page_number must be a number")
+        .typeError("product_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The page_number is required"),
+        .required("The product_id is required"),
     }).noUnknown(true),
   });
 

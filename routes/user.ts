@@ -80,7 +80,7 @@ router.post(
 );
 
 router.post(
-  "/upload",
+  "/upload-image",
   authorization.authenticateUser,
   upload("user").array("images"),
   validation.ImageValidation,
@@ -88,9 +88,23 @@ router.post(
     try {
       const instance = CUser.getInstance();
       const urlImage = await instance.updateUserImage(req.files, req.uid);
-      res.status(200).json(urlImage);
+      res.status(200).send(urlImage);
     } catch (err: any) {
-      res.status(500).json({ message: err.message });
+      res.status(500).end();
+    }
+  }
+);
+
+router.delete(
+  "/delete-image",
+  authorization.authenticateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+      const urlImage = await instance.deleteUserImage(req.uid);
+      res.status(200).send(urlImage);
+    } catch (err: any) {
+      res.status(500).end();
     }
   }
 );
@@ -114,6 +128,24 @@ router.get(
   }
 );
 
+router.get(
+  "/user-info",
+  authorization.authenticateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+
+      const dataInfo = await instance.getUserInfo(req.uid);
+      res.status(200).send(dataInfo);
+    } catch (e: any) {
+      if (e?.cause == "Validation Error") {
+        res.status(400).send(e.message);
+      } else {
+        res.status(500).send();
+      }
+    }
+  }
+);
 router.patch(
   "/change-password",
   validation.changePasswordValidation,

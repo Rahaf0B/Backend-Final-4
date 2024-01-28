@@ -12,16 +12,6 @@ router.use(cookieParser());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-//this is a dummy rout to test if my api works, will be deleted later
-router.get("/test", (req: Request, res: Response) => {
-  try {
-    res.status(200).send({ message: "we are at Cart test, server is running" });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 //getCartInfo
 router.get(
   "/",
@@ -29,14 +19,10 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
-      const status = await instance.getProductsInCart(
-        req.uid
-      );
+      const status = await instance.getProductsInCart(req.uid);
       res.status(200).send(status);
-
     } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).end();
     }
   }
 );
@@ -55,18 +41,15 @@ router.post(
         req.uid
       );
       res.status(200).send(data);
-    } catch (e:any) {
+    } catch (e: any) {
       if (e.cause == "not found") {
-        res.status(500).send(e.message);
-      } else 
-      res.status(500).end();
+        res.status(400).send(e.message);
+      } else res.status(500).end();
     }
   }
 );
 
-
-
-//addToCart
+//increase product quantity in Cart
 router.patch(
   "/increase_quantity",
   authorization.authenticateUser,
@@ -80,18 +63,15 @@ router.patch(
         req.uid
       );
       res.status(200).send(data);
-    } catch (e:any) {
-      console.error(e);
+    } catch (e: any) {
       if (e.cause == "not found") {
-        
-        res.status(500).send(e.message);;
-      } else 
-      res.status(500).end();
+        res.status(400).send(e.message);
+      } else res.status(500).end();
     }
   }
 );
 
-//decrease product amount from Cart
+//decrease product quantity from Cart
 router.patch(
   "/decrease_quantity",
   authorization.authenticateUser,

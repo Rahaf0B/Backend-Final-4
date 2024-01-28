@@ -5,3 +5,4 @@ db.config.ts
 .env
 dist
 test-http
+test.http

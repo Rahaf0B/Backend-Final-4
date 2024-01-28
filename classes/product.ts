@@ -1264,8 +1264,16 @@ export default class CProduct {
           effectedProduct.push(product.toJSON());
         }
       }
-      return effectedProduct;
-    } catch (error) {}
+      if (effectedProduct.length !== 0) {
+        return effectedProduct;
+      } else {
+        throw new Error("All the product in your cart is out of stock", {
+          cause: "empty-data-product",
+        });
+      }
+    } catch (error: any) {
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
+    }
   }
 
   async addProductDiscount(id: any) {

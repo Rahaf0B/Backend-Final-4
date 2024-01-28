@@ -13,7 +13,7 @@ import Session from "../models/Session";
 import User from "../models/User";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
-import { NUMBER } from "sequelize";
+import { NUMBER, or } from "sequelize";
 import Wishlist from "../models/Wishlist";
 import Product_wishlist from "../models/product_wishlist";
 import sequelizeConnection from "../conections/sequelizeConnection";
@@ -33,6 +33,7 @@ import cls from "cls-hooked";
 import { Sequelize } from "sequelize-typescript";
 import { Op } from "sequelize";
 import Rating from "../models/Rating";
+import Discount from "../models/Discount";
 
 export default class CUser {
   private static instance: CUser;
@@ -588,12 +589,26 @@ export default class CUser {
       const { path } = imageFile[0];
       const url = (await cloudinaryImageUploadMethod(path)) as any;
 
-      const image = await Image.create({
-        normal_uid: userId,
-        name: imageFile[0].originalname,
-        url: url.res,
+      const image = await Image.findOrCreate({
+        where: { normal_uid: userId },
+        defaults: {
+          normal_uid: userId,
+          name: imageFile[0].originalname,
+          url: url.res,
+        },
       });
       return url.res;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async deleteUserImage(userId: number): Promise<boolean> {
+    try {
+      const image = await Image.destroy({
+        where: { normal_uid: userId },
+      });
+      return true;
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -612,6 +627,7 @@ export default class CUser {
         "payment_status",
       ],
     });
+
     return orders;
   }
   async clearSession(userId: number) {
@@ -725,6 +741,20 @@ export default class CUser {
           "product.name",
           "product.sub_title",
           "product.price",
+          [
+            Sequelize.fn(
+              "COALESCE",
+              Sequelize.fn(
+                "SUM",
+                Sequelize.fn(
+                  "DISTINCT",
+                  Sequelize.col("product.discount.value")
+                )
+              ),
+              0
+            ),
+            "discount_value",
+          ],
         ],
         raw: true,
         subQuery: false,
@@ -736,14 +766,36 @@ export default class CUser {
               normal_uid: userId,
             },
           },
-          { model: Product, attributes: [] },
+          {
+            model: Product,
+            attributes: [],
+            include: [
+              {
+                model: Discount,
+                required: false,
+                as: "discount",
+                attributes: [],
+                through: {
+                  attributes: [],
+                },
+                subQuery: false,
+              },
+            ],
+          },
         ],
         transaction: trans,
         lock: true,
+        group: ["product_id", "quantity"],
       });
-      return data as any;
+      if (data.length !== 0) {
+        return data as any;
+      } else {
+        throw new Error("There is no product in your cart", {
+          cause: "empty-data-cart",
+        });
+      }
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -760,7 +812,7 @@ export default class CUser {
           { order_item_id: item.order_item_id },
           {
             where: { [Op.and]: [{ type: 1 }, { product_id: item.product_id }] },
-            transaction:trans
+            transaction: trans,
           }
         );
       }
@@ -784,9 +836,9 @@ export default class CUser {
       if (addressInfo) {
         return addressInfo.toJSON();
       }
-      throw new Error("Address not found", { cause: "not_found" });
+      throw new Error("Address not found", { cause: "address_not_found" });
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -818,16 +870,14 @@ export default class CUser {
 
   async orderCheckOut(userId: number, addressId: number, paymentType: string) {
     try {
-
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
-        const productsInfo = await this.getProductIDAndInfoInCart(
-          userId,
-          trans
-        );
-
+        let productsInfo = await this.getProductIDAndInfoInCart(userId, trans);
         const instance = CProduct.getInstance();
-
+        productsInfo.forEach((product) => {
+          product.price =
+            product.price - (product.price * product.discount_value) / 100;
+        });
         const productIds = productsInfo.map((product) => product.product_id);
         const productQuantity = productsInfo.map((product) => product.quantity);
 
@@ -839,6 +889,7 @@ export default class CUser {
         const acceptedProductIds = productInfoAfterEdit.map(
           (product) => product.product_id
         );
+
         const acceptedProduct = productsInfo.filter((product) =>
           acceptedProductIds.includes(product.product_id)
         );
@@ -858,7 +909,7 @@ export default class CUser {
         acceptedProduct.forEach(
           (product) => (product.order_id = order.order_id)
         );
-    
+
         const orderItemInfo = await this.createUserOrderItems(
           acceptedProduct,
           trans
@@ -870,18 +921,22 @@ export default class CUser {
           trans
         );
 
-
-        delete order.normal_uid;
-
         const commitTrans = await trans.commit();
-      return order;
+        let dataToReturn = Object(order);
+
+        dataToReturn = dataToReturn.toJSON();
+        delete dataToReturn.normal_uid;
+        delete dataToReturn.address_id;
+        dataToReturn.status = "processing";
+        return dataToReturn;
       } catch (error: any) {
         await trans.rollback();
-
-        throw new Error(error.message);
+        throw new Error(error.message, {
+          cause: error.cause ? error.cause : "",
+        });
       }
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -910,6 +965,30 @@ export default class CUser {
           [Op.and]: [{ normal_uid: userId }, { product_id: data.product_id }],
         },
       });
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async getUserInfo(userId: number) {
+    try {
+      const data = await Normal_User.findByPk(userId, {
+        subQuery: false,
+        attributes: [
+          "user.first_name",
+          [Sequelize.col("user.first_name"), "first_name"],
+          [Sequelize.col("user.last_name"), "last_name"],
+
+          [Sequelize.col("user.email"), "email"],
+
+          "user.email",
+          "phone_number",
+          "date_of_birth",
+        ],
+
+        include: [{ subQuery: false, model: User, attributes: [] }],
+      });
+      return data.toJSON();
     } catch (error: any) {
       throw new Error(error.message);
     }

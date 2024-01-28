@@ -12,23 +12,6 @@ router.use(cookieParser());
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-//this is a dummy rout to test if my api works, will be deleted later
-router.get("/test", async (req: Request, res: Response) => {
-  try {
-    const instance = CProduct.getInstance();
-
-    res
-      .status(200)
-      .send({
-        data: "result",
-        message: "we are at Cart test, server is running",
-      });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 //getOrderItems
 router.get(
   "/products",
@@ -92,7 +75,15 @@ router.post(
         req.body.payment_type
       );
       res.status(200).send(data);
-    } catch (error) {
+    } catch (error: any) {
+      if (
+        error.cause === "address_not_found" ||
+        error.cause === "empty-data-cart" ||
+        error.cause === "empty-data-product"
+      ) {
+        res.status(400).send(error.message);
+      }
+
       res.status(500).end();
     }
   }
