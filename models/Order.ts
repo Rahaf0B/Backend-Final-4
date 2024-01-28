@@ -10,6 +10,8 @@ import {
   HasMany,
   AllowNull,
   BelongsTo,
+  IsEmail,
+  Length,
 } from "sequelize-typescript";
 import { IOrder } from "../interfaces/objInterfaces";
 import Order_item from "./Order_item";
@@ -81,6 +83,39 @@ class Order extends Model<IOrder> implements IOrder {
       : "";
   }
 
+  @AllowNull(false)
+  @Length({ min: 3, max: 10 })
+  @Column({
+    type: DataType.STRING(10),
+  })
+  declare first_name: string;
+
+  @AllowNull(false)
+  @Length({ min: 3, max: 10 })
+  @Column({
+    type: DataType.STRING(10),
+  })
+  declare last_name: string;
+
+  @IsEmail
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare email: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare location: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.BIGINT,
+  })
+  declare phone_number: number;
+  
   @AllowNull(false)
   @ForeignKey(() => Address)
   @Column({
