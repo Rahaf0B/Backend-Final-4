@@ -582,20 +582,10 @@ export default class CProduct {
 
   async getHandPickedProductCount(categoryId: number = 0): Promise<number> {
     try {
-      const countData = await Product.count({
-        distinct: true,
-        where: {
-          [Op.and]: [
-            { category_id: categoryId },
-            { price: { [Op.lt]: 100 } },
-            Sequelize.literal(
-              "(SELECT AVG(rating_value) FROM rating WHERE rating.product_id = product.product_id) > 4.5"
-            ),
-          ],
-        },
-      });
-
-      return countData;
+      const countData = await sequelizeConnection.sequelize.query(
+        `select count(prod.product_id)from  (SELECT AVG(rating_value) as ra_val ,product.product_id FROM rating JOIN product ON rating.product_id = product.product_id WHERE rating.product_id = product.product_id and product.quantity<100 and product.category_id=${categoryId} group by product.product_id) as prod where prod.ra_val > 4.5;`
+      );
+      return Object.values(countData[0][0])[0];
     } catch (e: any) {
       throw new Error(e.message);
     }
