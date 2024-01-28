@@ -589,7 +589,7 @@ export default class CProduct {
             { category_id: categoryId },
             { price: { [Op.lt]: 100 } },
             Sequelize.literal(
-              "(SELECT AVG(value) FROM rating WHERE rating.product_id = product.product_id) > 4.5"
+              "(SELECT AVG(rating_value) FROM rating WHERE rating.product_id = product.product_id) > 4.5"
             ),
           ],
         },
