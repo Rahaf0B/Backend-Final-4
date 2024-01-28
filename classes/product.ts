@@ -34,20 +34,22 @@ export default class CProduct {
   private static instance: CProduct;
   private countProductRating = Sequelize.fn(
     "COUNT",
-    Sequelize.col("rating.product_id")
+    Sequelize.fn("DISTINCT", Sequelize.col("rating.rating_id"))
   );
-  private avgProductRating = Sequelize.fn("AVG", Sequelize.col("rating.value"));
+
+  private avgProductRating = Sequelize.fn(
+    "AVG",
+    Sequelize.col("rating.rating_value")
+  );
   private discountProduct = Sequelize.fn(
-    "SUM",
-    Sequelize.col("discount.value")
+    "COALESCE",
+    Sequelize.fn(
+      "SUM",
+      Sequelize.fn("DISTINCT", Sequelize.col("discount.value"))
+    ),
+    0
   );
-  private groupByProductQuery = [
-    "product_id",
-    "image_id",
-    "wishlist.wishlist_id",
-    "rating.rating_id",
-    "discount.discount_id",
-  ];
+
 
   private constructor() {}
 
@@ -107,6 +109,7 @@ export default class CProduct {
           ),
           "is_liked",
         ],
+
         [this.countProductRating, "number_of_ratings"],
         [this.avgProductRating, "ratings"],
         [this.discountProduct, "discount_value"],
@@ -128,28 +131,34 @@ export default class CProduct {
           where: { type: { [Op.eq]: 1 } },
           subQuery: false,
         },
-
         {
           model: Wishlist,
           required: false,
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
-          required: false,
           attributes: [],
+          required: false,
           subQuery: false,
         },
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
     });
     try {
@@ -238,6 +247,9 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
@@ -248,11 +260,16 @@ export default class CProduct {
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
+
       order: [["product_id", "DESC"]],
     });
     try {
@@ -452,6 +469,9 @@ export default class CProduct {
             attributes: [],
             subQuery: false,
             where: { normal_uid: userId },
+            through: {
+              attributes: [],
+            },
           },
           {
             model: Rating,
@@ -462,11 +482,15 @@ export default class CProduct {
           {
             model: Discount,
             required: false,
+            as: "discount",
             attributes: [],
+            through: {
+              attributes: [],
+            },
             subQuery: false,
           },
         ],
-        group: this.groupByProductQuery,
+        group: ["product_id", "image_id"],
 
         order: [["product_id", "DESC"]],
       });
@@ -527,6 +551,9 @@ export default class CProduct {
             attributes: [],
             subQuery: false,
             where: { normal_uid: userId },
+            through: {
+              attributes: [],
+            },
           },
           {
             model: Rating,
@@ -537,11 +564,15 @@ export default class CProduct {
           {
             model: Discount,
             required: false,
+            as: "discount",
             attributes: [],
+            through: {
+              attributes: [],
+            },
             subQuery: false,
           },
         ],
-        group: this.groupByProductQuery,
+        group: ["product_id", "image_id"],
         order: [["product_id", "DESC"]],
       });
       return data;
@@ -550,24 +581,26 @@ export default class CProduct {
     }
   }
 
-
-
-  async getHandPickedProductCount(categoryId: number = 0) {
+  async getHandPickedProductCount(categoryId: number = 0): Promise<number> {
     try {
       const countData = await Product.count({
         distinct: true,
-    
-          where: {
-            [Op.and]: [{ category_id: categoryId }, { price: { [Op.lt]: 100 } }],
-          
+        where: {
+          [Op.and]: [
+            { category_id: categoryId },
+            { price: { [Op.lt]: 100 } },
+            Sequelize.literal(
+              "(SELECT AVG(value) FROM rating WHERE rating.product_id = product.product_id) > 4.5"
+            ),
+          ],
         },
       });
+
       return countData;
     } catch (e: any) {
       throw new Error(e.message);
     }
   }
-
 
   async handPickedProducts(
     pageNumber: number = 1,
@@ -620,21 +653,28 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
-          required: false,
           attributes: [],
           subQuery: false,
+          required: true,
         },
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
       having: { ratings: { [Op.gt]: 4.5 } },
     });
@@ -667,7 +707,7 @@ export default class CProduct {
             ? {
                 model: Rating,
                 where: {
-                  [Op.and]: [{ value: { [Op.gte]: value } }],
+                  [Op.and]: [{ rating_value: { [Op.gte]: value } }],
                 },
               }
             : {
@@ -734,6 +774,9 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
@@ -746,9 +789,13 @@ export default class CProduct {
           required: filterType == "discount" ? false : true,
           attributes: [],
           subQuery: false,
+          through: {
+            attributes: [],
+          },
+          as: "discount",
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
       having:
         filterType == "discount"
@@ -815,6 +862,9 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
@@ -825,11 +875,15 @@ export default class CProduct {
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
     });
     try {
@@ -852,7 +906,10 @@ export default class CProduct {
       const data = await Rating.findAll({
         attributes: [
           "value",
-          [Sequelize.fn("COUNT", Sequelize.col("rating.value")), "countRating"],
+          [
+            Sequelize.fn("COUNT", Sequelize.col("rating.rating_value")),
+            "countRating",
+          ],
         ],
         where: { product_id: productId },
         group: ["value"],
@@ -888,7 +945,6 @@ export default class CProduct {
 
       return [countRating, ratings];
     } catch (error: any) {
-      console.error(error);
       throw new Error(error.message);
     }
   }
@@ -951,6 +1007,9 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
@@ -961,11 +1020,15 @@ export default class CProduct {
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
     });
     return [items_count, items];
@@ -1018,6 +1081,9 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Rating,
@@ -1028,11 +1094,15 @@ export default class CProduct {
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
       ],
-      group: this.groupByProductQuery,
+      group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
     });
     return [items_count, items];
@@ -1076,11 +1146,18 @@ export default class CProduct {
           attributes: [],
           subQuery: false,
           where: { normal_uid: userId },
+          through: {
+            attributes: [],
+          },
         },
         {
           model: Discount,
           required: false,
+          as: "discount",
           attributes: [],
+          through: {
+            attributes: [],
+          },
           subQuery: false,
         },
         {
@@ -1097,13 +1174,7 @@ export default class CProduct {
           attributes: [],
         },
       ],
-      group: [
-        "product_id",
-        "image_id",
-        "wishlist.wishlist_id",
-        "product_cart.cart_id",
-        "discount.discount_id",
-      ],
+      group: ["product_id", "image_id", "product_cart.cart_id"],
       order: [["product_id", "DESC"]],
     });
     return items;
@@ -1115,9 +1186,9 @@ export default class CProduct {
       attributes: [
         "total_price",
         "payment_type",
-       "first_name",
-         "last_name",
-         "email",
+        "first_name",
+        "last_name",
+        "email",
         "phone_number",
         "location",
         [Sequelize.col("address.address_id"), "address_id"],

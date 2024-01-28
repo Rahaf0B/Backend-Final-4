@@ -63,7 +63,7 @@ export interface IDiscount {
 export interface IRating {
   rating_id?: number;
   normal_uid: number;
-  value: number;
+  rating_value: number;
   product_id: number;
   comment?:string;
   date?: Date | string;

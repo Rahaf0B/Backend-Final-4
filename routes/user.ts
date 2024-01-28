@@ -137,6 +137,7 @@ router.patch(
 router.post(
   "/add-reviews",
   authorization.authenticateUser,
+  validation.validateAddReview,
   async (req: Request, res: Response) => {
     try {
       const instance = CUser.getInstance();

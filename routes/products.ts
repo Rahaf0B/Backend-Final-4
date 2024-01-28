@@ -281,7 +281,6 @@ router.get(
 router.get("/ratings/:product_id", async (req: Request, res: Response) => {
   try {
     const productId = Number(req.params.product_id);
-    console.log(productId);
     const instance = CProduct.getInstance();
     const [countRating, dataInfo] = await instance?.getProductRatings(
       Number(productId)
@@ -366,7 +365,6 @@ router.post(
 
       res.status(200).send(dataInfo);
     } catch (error: any) {
-      console.error(error);
       if (error.cause == "existing") {
         res.status(500).send(error.message);
       }

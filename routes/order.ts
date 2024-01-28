@@ -13,9 +13,11 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 //this is a dummy rout to test if my api works, will be deleted later
-router.get("/test", (req: Request, res: Response) => {
+router.get("/test", async(req: Request, res: Response) => {
   try {
-    res.status(200).send({ message: "we are at Cart test, server is running" });
+    const instance = CProduct.getInstance();
+
+    res.status(200).send({ data:"result",message: "we are at Cart test, server is running" });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -35,8 +37,7 @@ router.get(
         );
       res.status(200).send(data);
     } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).end();
     }
   }
 );
@@ -55,8 +56,7 @@ router.get(
       );
       res.status(200).send(data,);
     } catch (error) {
-      console.error("Error:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).end();
     }
   }
 );

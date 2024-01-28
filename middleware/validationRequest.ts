@@ -849,6 +849,45 @@ async function validateAddBrandOrCategory(
   }
 }
 
+async function validateAddReview(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    body: object({
+      product_id: number()
+        .typeError("product_id must be a number")
+        .nullable()
+        .required("The product_id is required"),
+
+      comment: string()
+        .typeError("comment must be a string")
+        .nullable()
+        .required("The comment is required"),
+
+      rating_value: number()
+        .typeError("rating_value must be a number")
+        .nullable()
+        .required("The rating_value is required"),
+    })
+      .required("The product_id and comment and rating_value are required")
+      .nullable()
+      .strict(true)
+      .noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+      body: req.body,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
@@ -872,4 +911,5 @@ export default {
   UserAddressValidation,
   validateAddOrder,
   validateAddBrandOrCategory,
+  validateAddReview,
 };
