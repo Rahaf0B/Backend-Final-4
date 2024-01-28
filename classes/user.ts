@@ -760,6 +760,7 @@ export default class CUser {
           { order_item_id: item.order_item_id },
           {
             where: { [Op.and]: [{ type: 1 }, { product_id: item.product_id }] },
+            transaction:trans
           }
         );
       }
@@ -817,7 +818,7 @@ export default class CUser {
 
   async orderCheckOut(userId: number, addressId: number, paymentType: string) {
     try {
-      console.log("uset",userId)
+
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
         const productsInfo = await this.getProductIDAndInfoInCart(
