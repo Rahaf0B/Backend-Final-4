@@ -817,6 +817,7 @@ export default class CUser {
 
   async orderCheckOut(userId: number, addressId: number, paymentType: string) {
     try {
+      console.log("uset",userId)
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
         const productsInfo = await this.getProductIDAndInfoInCart(
@@ -856,19 +857,23 @@ export default class CUser {
         acceptedProduct.forEach(
           (product) => (product.order_id = order.order_id)
         );
-
+    
         const orderItemInfo = await this.createUserOrderItems(
           acceptedProduct,
           trans
         );
-
         const value = await this.decreaseOrDeleteFromCart(
           acceptedProductIds,
           "delete",
-          6,
+          userId,
           trans
         );
+
+
+        delete order.normal_uid;
+
         const commitTrans = await trans.commit();
+      return order;
       } catch (error: any) {
         await trans.rollback();
 
