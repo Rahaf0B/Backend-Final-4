@@ -831,14 +831,13 @@ export default class CUser {
           normal_uid: userId,
           product_id: data.product_id,
           comment: data.comment,
-          value: data.value,
+          rating_value: data.rating_value,
         },
         where: {
           [Op.and]: [{ normal_uid: userId }, { product_id: data.product_id }],
         },
       });
     } catch (error: any) {
-      console.error(error);
       throw new Error(error.message);
     }
   }

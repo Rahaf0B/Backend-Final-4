@@ -46,8 +46,9 @@ class Rating extends Model<IRating> implements IRating {
 
   @Column({
     type: DataType.INTEGER,
+
   })
-  declare value: number;
+  declare rating_value: number;
 
   @AllowNull(false)
   @ForeignKey(() => Product)
