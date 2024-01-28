@@ -24,8 +24,10 @@ router.post(
         req.uid
       );
       res.status(200).send(status);
-    } catch (error: any) {
-      res.status(500).end();
+    } catch (e: any) {
+      if (e.cause == "not found") {
+        res.status(500).send(e.message);
+      } else res.status(500).end();
     }
   }
 );

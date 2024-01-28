@@ -716,7 +716,7 @@ async function UserAddressValidation(
 
       location: string()
         .strict(true)
-        .typeError("date_of_birth must be a string formate")
+        .typeError("location must be a string formate")
         .nullable()
         .required("The new location is required"),
     })

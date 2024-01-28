@@ -55,7 +55,37 @@ router.post(
         req.uid
       );
       res.status(200).send(data);
-    } catch (error) {
+    } catch (e:any) {
+      if (e.cause == "not found") {
+        res.status(500).send(e.message);
+      } else 
+      res.status(500).end();
+    }
+  }
+);
+
+
+
+//addToCart
+router.patch(
+  "/increase_quantity",
+  authorization.authenticateUser,
+  validate.validateCart,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+      const data = await instance.increaseProductInCart(
+        Number(req.body.product_id),
+        Number(req.body.quantity),
+        req.uid
+      );
+      res.status(200).send(data);
+    } catch (e:any) {
+      console.error(e);
+      if (e.cause == "not found") {
+        
+        res.status(500).send(e.message);;
+      } else 
       res.status(500).end();
     }
   }
@@ -63,7 +93,7 @@ router.post(
 
 //decrease product amount from Cart
 router.patch(
-  "/",
+  "/decrease_quantity",
   authorization.authenticateUser,
   validate.validateCart,
   async (req: Request, res: Response) => {

@@ -81,7 +81,7 @@ export default class CUser {
     return data;
   }
 
-  async createUserAccount(data: IUser): Promise<[IUser, string, string]> {
+  async createUserAccount(data: IUser): Promise<[boolean, string, string]> {
     try {
       data.type = "normal_user";
       const dataAdded = await User.create(data);
@@ -91,7 +91,8 @@ export default class CUser {
         const [token, expirationDate] = await this.generateOrUpdateSession(
           dataToReturn.uid
         );
-        return [dataToReturn, token, expirationDate];
+
+        return [true, token, expirationDate];
       } catch (e: any) {
         if (e.name === "SequelizeUniqueConstraintError") {
           await this.generateOrUpdateSession(data.uid);
@@ -131,7 +132,7 @@ export default class CUser {
     }
   }
 
-  async logInUser(user: Partial<IUser>): Promise<[IUser, string, string]> {
+  async logInUser(user: Partial<IUser>): Promise<[boolean, string, string]> {
     try {
       const userData = await this.checkUserExists("email", user.email);
       if (userData) {
@@ -147,7 +148,7 @@ export default class CUser {
               userData.uid
             );
             delete userData.uid;
-            return [userData, token, expirationDate];
+            return [true, token, expirationDate];
           } else {
             throw new Error("Invalid Data Try Again", {
               cause: "Validation Error",
@@ -175,46 +176,47 @@ export default class CUser {
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
         const instance = CProduct.getInstance();
-        const data = await instance.checkProductExists(productId);
+        const data = await instance.checkProductExists(productId, trans);
         if (data) {
-          try {
-            const wishlist = await Wishlist.findOrCreate({
-              where: { normal_uid: userId },
-              transaction: trans,
-              lock: true,
-            });
+          const wishlist = await Wishlist.findOrCreate({
+            where: { normal_uid: userId },
+            transaction: trans,
+            lock: true,
+          });
 
-            const wishlistInfo = wishlist[0].toJSON();
-            try {
-              const wishlistProduct = await Product_wishlist.findOrCreate({
-                where: {
-                  product_id: productId,
-                  wishlist_id: wishlistInfo.wishlist_id,
-                },
-                transaction: trans,
-                lock: true,
-                skipLocked: true,
-              });
-              try {
-                const commitTrans = await trans.commit();
+          const wishlistInfo = wishlist[0].toJSON();
 
-                return true;
-              } catch (error: any) {
-                throw new Error(error.message);
-              }
-            } catch (error: any) {
-              throw new Error(error.message);
+          const wishlistProduct = await Product_wishlist.findOrCreate({
+            where: {
+              product_id: productId,
+              wishlist_id: wishlistInfo.wishlist_id,
+            },
+            transaction: trans,
+            lock: true,
+            skipLocked: true,
+          });
+
+          const commitTrans = await trans.commit();
+
+          return true;
+        } else {
+          throw new Error(
+            "Did not Found Product for the Quantity that you requested",
+            {
+              cause: "not found",
             }
-          } catch (error: any) {
-            throw new Error(error.message);
-          }
+          );
         }
-      } catch (error: any) {
+      } catch (e: any) {
         await trans.rollback();
-        throw new Error(error.message);
+        if (e.cause == "not found") {
+          throw new Error(e.message, { cause: e.cause });
+        } else throw new Error(e.message);
       }
-    } catch (error: any) {
-      throw new Error(error.message);
+    } catch (e: any) {
+      if (e.cause == "not found") {
+        throw new Error(e.message, { cause: e.cause });
+      } else throw new Error(e.message);
     }
   }
 
@@ -264,6 +266,66 @@ export default class CUser {
     }
   }
 
+  async increaseProductInCart(
+    productId: number,
+    quantity: number,
+    userId: number
+  ) {
+    try {
+      const trans = await sequelizeConnection.sequelize.transaction();
+      try {
+        const cart = await Cart.findOne({
+          where: { normal_uid: userId },
+          transaction: trans,
+          lock: true,
+        });
+
+        const cartProduct = await Product_cart.findOne({
+          where: {
+            product_id: productId,
+            cart_id: cart.cart_id,
+          },
+
+          transaction: trans,
+          lock: true,
+          skipLocked: true,
+        });
+        const instance = CProduct.getInstance();
+
+        const data = await instance.checkProductExists(
+          productId,
+          trans,
+          cartProduct.quantity + quantity
+        );
+
+        if (data) {
+          cartProduct.increment("quantity", { by: quantity });
+          const commitTrans = await trans.commit();
+          const dataToReturn = {
+            product_id: productId,
+            quantity: cartProduct.quantity + quantity,
+          };
+          return dataToReturn;
+        } else {
+          throw new Error(
+            "Did not Found Product for the Quantity that you requested",
+            {
+              cause: "not found",
+            }
+          );
+        }
+      } catch (e: any) {
+        await trans.rollback();
+        if (e.cause == "not found") {
+          throw new Error(e.message, { cause: e.cause });
+        } else throw new Error(e.message);
+      }
+    } catch (e: any) {
+      if (e.cause == "not found") {
+        throw new Error(e.message, { cause: e.cause });
+      } else throw new Error(e.message);
+    }
+  }
   async addToCart(
     productId: number,
     quantity: number,
@@ -273,50 +335,54 @@ export default class CUser {
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
         const instance = CProduct.getInstance();
-        const data = await instance.checkProductExists(productId);
+        const data = await instance.checkProductExists(
+          productId,
+          trans,
+          quantity
+        );
         if (data) {
-          try {
-            const cart = await Cart.findOrCreate({
-              where: { normal_uid: userId },
-              transaction: trans,
-              lock: true,
-            });
+          const cart = await Cart.findOrCreate({
+            where: { normal_uid: userId },
+            transaction: trans,
+            lock: true,
+          });
 
-            const cartInfo = cart[0].toJSON();
-            try {
-              const cartProduct = await Product_cart.findOrCreate({
-                where: {
-                  product_id: productId,
-                  cart_id: cartInfo.cart_id,
-                },
-                defaults: {
-                  quantity: 0,
-                },
-                transaction: trans,
-                lock: true,
-                skipLocked: true,
-              });
-              cartProduct[0].increment("quantity", { by: quantity });
-              try {
-                const commitTrans = await trans.commit();
+          const cartInfo = cart[0].toJSON();
 
-                return true;
-              } catch (error: any) {
-                throw new Error(error.message);
-              }
-            } catch (error: any) {
-              throw new Error(error.message);
+          const cartProduct = await Product_cart.findOrCreate({
+            where: {
+              product_id: productId,
+              cart_id: cartInfo.cart_id,
+            },
+            defaults: {
+              quantity: quantity,
+            },
+            transaction: trans,
+            lock: true,
+            skipLocked: true,
+          });
+          const commitTrans = await trans.commit();
+
+          return true;
+        } else {
+          throw new Error(
+            "Did not Found Product for the Quantity that you requested",
+            {
+              cause: "not found",
             }
-          } catch (error: any) {
-            await trans.rollback();
-            throw new Error(error.message);
-          }
+          );
         }
-      } catch (error: any) {
-        throw new Error(error.message);
+      } catch (e: any) {
+        await trans.rollback();
+
+        if (e.cause == "not found") {
+          throw new Error(e.message, { cause: e.cause });
+        } else throw new Error(e.message);
       }
-    } catch (error: any) {
-      throw new Error(error.message);
+    } catch (e: any) {
+      if (e.cause == "not found") {
+        throw new Error(e.message, { cause: e.cause });
+      } else throw new Error(e.message);
     }
   }
 
@@ -350,6 +416,7 @@ export default class CUser {
         where: {
           product_id: productId,
           cart_id: cartId,
+          quantity: { [Op.gte]: quantity },
         },
         transaction: trans,
       });

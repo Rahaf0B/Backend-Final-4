@@ -50,7 +50,6 @@ export default class CProduct {
     0
   );
 
-
   private constructor() {}
 
   public static getInstance(): CProduct {
@@ -692,30 +691,26 @@ export default class CProduct {
     try {
       const count = await Product.count({
         distinct: true,
-        where: [
-          filterType == "limited" ? { quantity: { [Op.lt]: value } } : {},
-        ],
-        include: [
-          filterType == "discount"
-            ? {
-                model: Discount,
-                where: {
-                  [Op.and]: [{ value: { [Op.gte]: value } }],
-                },
-              }
-            : filterType == "rating"
-            ? {
-                model: Rating,
-                where: {
-                  [Op.and]: [{ rating_value: { [Op.gte]: value } }],
-                },
-              }
-            : {
-                model: Discount,
-                required: false,
-                attributes: [],
-              },
-        ],
+        where: {
+          [Op.or]: [
+            filterType == "limited" ? { quantity: { [Op.lt]: value } } : {},
+            filterType == "discount"
+              ? Sequelize.literal(`
+                  (
+                    SELECT COALESCE(SUM(value), 0)
+                    FROM product_discount
+                    JOIN discount ON product_discount.discount_id = discount.discount_id
+                    WHERE product_discount.product_id = product.product_id
+                  ) >= ${value}
+                `)
+              : {},
+            filterType == "rating"
+              ? Sequelize.literal(
+                  `EXISTS (SELECT 1 FROM rating WHERE product_id = product.product_id GROUP BY product_id HAVING AVG(rating_value) >= ${value})`
+                )
+              : {},
+          ],
+        },
       });
 
       return count;
@@ -894,10 +889,20 @@ export default class CProduct {
     }
   }
 
-  async checkProductExists(product_id: number) {
+  async checkProductExists(productId: number, trans: any, quantity?: number) {
     try {
-      const data = await Product.findByPk(product_id);
-      return data;
+      const data = await Product.findOne({
+        where: {
+          [Op.and]: [
+            { product_id: productId },
+            quantity ? { quantity: { [Op.gte]: quantity } } : {},
+          ],
+        },
+
+        transaction: trans,
+        lock: true,
+      });
+      return data.toJSON();
     } catch (e: any) {}
   }
 
