@@ -689,57 +689,26 @@ export default class CProduct {
     value?: number
   ): Promise<number> {
     try {
+      const avgRating = Sequelize.fn("AVG", Sequelize.col("rating"));
 
-      const avgRating = Sequelize.fn('AVG', Sequelize.col('rating'));
+      let count;
+      if (filterType == "rating") {
+        count = await sequelizeConnection.sequelize.query(
+          `select   count(k.ra) from  (select count(DISTINCT product_id) as ra ,product_id from rating group by product_id having AVG(rating.rating_value) >= ${value}) as k;`
+        );
+      }
+      if (filterType == "discount") {
+        count = await sequelizeConnection.sequelize.query(
+          `SELECT Count(DISTINCT k.product_id) from(select COALESCE(SUM(discount.value), 0) as s ,product.product_id FROM product_discount JOIN discount ON product_discount.discount_id = discount.discount_id JOIN product ON product_discount.product_id = product.product_id where product_discount.product_id = product.product_id group by product.product_id) as k where k.s >=${value};`
+        );
+      }
+      if (filterType == "limited") {
+        count = await sequelizeConnection.sequelize.query(
+          `select count(DISTINCT product_id) from product where quantity<${value}`
+        );
+      }
 
-//       const count = await Product.count({
-//         distinct: true,
-
-//         include: [{model:Rating,}],
-//         where: 
-//            Sequelize.literal(`AVG(rating.rating_value) >= 4`),
-// col:"product_id"
-//           }
-//       )
-          /*
-
- '$rating.rating_value$': {
-            [Sequelize.fn('AVG', Sequelize.col('rating_value'))]: {
-              [Op.gte]: 4
-            }
-          */
-        // where: {
-        //   [Op.or]: [
-        //     filterType == "limited" ? { quantity: { [Op.lt]: value } } : {},
-        //     filterType == "discount"
-        //       ? Sequelize.literal(`
-        //           (
-        //             SELECT COALESCE(SUM(value), 0)
-        //             FROM product_discount
-        //             JOIN discount ON product_discount.discount_id = discount.discount_id
-        //             WHERE product_discount.product_id = product.product_id
-        //           ) >= ${value}
-        //         `)
-        //       : {},
-        //     filterType == "rating"
-        //       ? Sequelize.literal(
-        //           `EXISTS (SELECT 1 FROM rating WHERE product_id = product.product_id GROUP BY product_id HAVING AVG(rating_value) >= ${value})`
-        //         )
-        //       : {},
-        //   ],
-        // },
-//      ;
-
-// const result=await sequelizeConnection.sequelize.query("SELECT COUNT(DISTINCT product.product_id) AS count FROM product  LEFT JOIN rating r ON product.product_id = r.product_id GROUP BY product.product_id HAVING AVG(r.rating_value) > 2;")
-// // const result=await sequelizeConnection.sequelize.query("SELECT COUNT(DISTINCT `Product`.`product_id`) AS `count` FROM `product` AS `Product` LEFT OUTER JOIN `rating` AS `rating` ON `Product`.`product_id` = `rating`.`product_id` GROUP BY `Product`.`product_id` HAVING AVG(`rating`.`rating_value`) >= 4;")
-// console.log(result)     
-// console.log("*******************")
-// // const result2=await sequelizeConnection.sequelize.query("SELECT COUNT(DISTINCT product.product_id) AS count FROM product  LEFT JOIN rating r ON product.product_id = r.product_id GROUP BY product.product_id HAVING AVG(r.rating_value) > 4;")
-
-const result2=await sequelizeConnection.sequelize.query("select   count(k.ra) from  (select count(DISTINCT product_id) as ra ,product_id from rating group by product_id having AVG(rating.rating_value) > 4) as k;")
-console.log(Object.values(result2[0][0]))     
-
-return Object.values(result2[0][0])[0];
+      return Object.values(count[0][0])[0];
     } catch (err: any) {
       console.log(err);
       throw new Error(err.message);
