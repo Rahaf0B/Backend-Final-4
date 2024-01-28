@@ -13,10 +13,7 @@ async function checkExistSession(
   } else {
     try {
       const returnreq=await authenticateUser(req, res, next);
-      if (returnreq.statusCode==401){
-        req.uid = 0;
-        next();
-      }else return returnreq;
+      return returnreq;
     } catch (e: any) {
       return res.status(500);
     }
