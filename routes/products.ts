@@ -255,12 +255,12 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
-      const dataInfo = await instance?.getAllProducts(
+      const [countData,dataInfo] = await instance?.getAllProducts(
         req.uid,
         Number(req.query.page_number),
         Number(req.query.number_of_items)
       );
-      res.status(200).send(dataInfo);
+      res.status(200).send({ items_count: countData, items: dataInfo });
     } catch (error) {
       res.status(500).end();
     }
