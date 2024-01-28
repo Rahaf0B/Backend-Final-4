@@ -702,24 +702,49 @@ export default class CUser {
     }
   }
 
+  async getSingleAddressInfo(addressId: number) {
+    try {
+      const addressInfo = await Address.findByPk(addressId, {
+        attributes: [
+          "first_name",
+          "last_name",
+          "location",
+          "email",
+          "phone_number",
+        ],
+      });
+      if (addressInfo) {
+        return addressInfo.toJSON();
+      }
+      throw new Error("Address not found", { cause: "not_found" });
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
   async createOrder(
     userId: number,
     addressId: number,
     paymentType: string,
-    TotalPrice: number
+    TotalPrice: number,
+    trans: any
   ): Promise<IOrder> {
     try {
-      const order = await Order.create({
+      const addressInfo = await this.getSingleAddressInfo(addressId);
+      const dataOrder = {
         normal_uid: userId,
         address_id: addressId,
         payment_status: true,
         payment_type: paymentType,
         total_price: TotalPrice,
         status: 1,
-      });
+        ...addressInfo,
+      };
+
+      const order = await Order.create(dataOrder, { transaction: trans });
       return order;
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -727,71 +752,56 @@ export default class CUser {
     try {
       const trans = await sequelizeConnection.sequelize.transaction();
       try {
-        try {
-          const productsInfo = await this.getProductIDAndInfoInCart(
-            userId,
-            trans
-          );
+        const productsInfo = await this.getProductIDAndInfoInCart(
+          userId,
+          trans
+        );
 
-          const instance = CProduct.getInstance();
+        const instance = CProduct.getInstance();
 
-          const productIds = productsInfo.map((product) => product.product_id);
-          const productQuantity = productsInfo.map(
-            (product) => product.quantity
-          );
-          try {
-            const productInfoAfterEdit = await instance.decreaseProductAmount(
-              productIds,
-              productQuantity,
-              trans
-            );
-            const acceptedProductIds = productInfoAfterEdit.map(
-              (product) => product.product_id
-            );
-            const acceptedProduct = productsInfo.filter((product) =>
-              acceptedProductIds.includes(product.product_id)
-            );
+        const productIds = productsInfo.map((product) => product.product_id);
+        const productQuantity = productsInfo.map((product) => product.quantity);
 
-            const totalPrice = acceptedProduct.reduce(
-              (a, b) => a + b.price * b.quantity,
-              0
-            );
+        const productInfoAfterEdit = await instance.decreaseProductAmount(
+          productIds,
+          productQuantity,
+          trans
+        );
+        const acceptedProductIds = productInfoAfterEdit.map(
+          (product) => product.product_id
+        );
+        const acceptedProduct = productsInfo.filter((product) =>
+          acceptedProductIds.includes(product.product_id)
+        );
 
-            try {
-              const order = await this.createOrder(
-                userId,
-                addressId,
-                paymentType,
-                totalPrice
-              );
-              acceptedProduct.forEach(
-                (product) => (product.order_id = order.order_id)
-              );
-              try {
-                const orderItemInfo = await this.createUserOrderItems(
-                  acceptedProduct,
-                  trans
-                );
+        const totalPrice = acceptedProduct.reduce(
+          (a, b) => a + b.price * b.quantity,
+          0
+        );
 
-                const value = await this.decreaseOrDeleteFromCart(
-                  acceptedProductIds,
-                  "delete",
-                  6,
-                  trans
-                );
-                const commitTrans = await trans.commit();
-              } catch (error: any) {
-                throw new Error(error.message);
-              }
-            } catch (error: any) {
-              throw new Error(error.message);
-            }
-          } catch (error: any) {
-            throw new Error(error.message);
-          }
-        } catch (error: any) {
-          throw new Error(error.message);
-        }
+        const order = await this.createOrder(
+          userId,
+          addressId,
+          paymentType,
+          totalPrice,
+          trans
+        );
+        acceptedProduct.forEach(
+          (product) => (product.order_id = order.order_id)
+        );
+
+        const orderItemInfo = await this.createUserOrderItems(
+          acceptedProduct,
+          trans
+        );
+
+        const value = await this.decreaseOrDeleteFromCart(
+          acceptedProductIds,
+          "delete",
+          6,
+          trans
+        );
+        const commitTrans = await trans.commit();
       } catch (error: any) {
         await trans.rollback();
 

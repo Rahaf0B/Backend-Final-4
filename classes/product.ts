@@ -550,13 +550,32 @@ export default class CProduct {
     }
   }
 
+
+
+  async getHandPickedProductCount(categoryId: number = 0) {
+    try {
+      const countData = await Product.count({
+        distinct: true,
+    
+          where: {
+            [Op.and]: [{ category_id: categoryId }, { price: { [Op.lt]: 100 } }],
+          
+        },
+      });
+      return countData;
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }
+
+
   async handPickedProducts(
     pageNumber: number = 1,
     numberOfItems: number = 5,
     userId?: number,
     categoryId: number = 0
   ): Promise<(number | Product[])[]> {
-    const countData = this.getProductCount(categoryId);
+    const countData = this.getHandPickedProductCount(categoryId);
 
     const data = await Product.findAll({
       subQuery: false,
@@ -604,6 +623,7 @@ export default class CProduct {
         },
         {
           model: Rating,
+          required: false,
           attributes: [],
           subQuery: false,
         },
@@ -798,6 +818,7 @@ export default class CProduct {
         },
         {
           model: Rating,
+          required: false,
           attributes: [],
           subQuery: false,
         },
@@ -933,6 +954,7 @@ export default class CProduct {
         },
         {
           model: Rating,
+          required: false,
           attributes: [],
           subQuery: false,
         },
@@ -999,6 +1021,7 @@ export default class CProduct {
         },
         {
           model: Rating,
+          required: false,
           attributes: [],
           subQuery: false,
         },
@@ -1092,11 +1115,12 @@ export default class CProduct {
       attributes: [
         "total_price",
         "payment_type",
-        [Sequelize.col("address.first_name"), "first_name"],
-        [Sequelize.col("address.last_name"), "last_name"],
-        [Sequelize.col("address.email"), "email"],
-        [Sequelize.col("address.phone_number"), "phone_number"],
-        [Sequelize.col("address.location"), "location"],
+       "first_name",
+         "last_name",
+         "email",
+        "phone_number",
+        "location",
+        [Sequelize.col("address.address_id"), "address_id"],
       ],
       include: [
         {
