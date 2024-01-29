@@ -206,7 +206,7 @@ router.get(
 
 //get5RelatedProducts
 router.get(
-  "/related_product",
+  "/related-product",
   authorization.checkExistSession,
   validate.validateCategoryBrandID,
   async (req: Request, res: Response) => {

@@ -48,7 +48,7 @@ router.get(
 );
 
 router.post(
-  "/new_address",
+  "/new-address",
   authorization.authenticateUser,
   validate.UserAddressValidation,
   async (req: Request, res: Response) => {
@@ -63,7 +63,7 @@ router.post(
 );
 
 router.post(
-  "/new_order",
+  "/new-order",
   authorization.authenticateUser,
   validate.validateAddOrder,
   async (req: Request, res: Response) => {
