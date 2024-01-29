@@ -175,8 +175,12 @@ router.post(
       const instance = CUser.getInstance();
 
       const dataInfo = await instance.addUserReview(req.body, req.uid);
-      res.status(200).send();
+      res.status(200).send(dataInfo);
     } catch (e: any) {
+      if(e.cause=="not_found"){
+        res.status(400).send(e.message);
+
+      }
       res.status(500).send();
     }
   }

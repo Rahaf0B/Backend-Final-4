@@ -84,7 +84,7 @@ router.get(
 router.get(
   "/new-arrival",
   authorization.checkExistSession,
-  validate.validatePageAndItemNumber,
+  validate.validatePageAndItemNumberNewArrival,
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();

@@ -566,6 +566,7 @@ export default class CUser {
             "phone_number",
             "date_of_birth",
           ],
+          transaction: trans,
         });
         const commitTrans = await trans.commit();
         return updatedUserData;
@@ -966,8 +967,17 @@ export default class CUser {
           [Op.and]: [{ normal_uid: userId }, { product_id: data.product_id }],
         },
       });
+      const dataToReturn=addReview[0].toJSON();
+      delete dataToReturn.normal_uid;
+      delete dataToReturn.rating_id;
+      return dataToReturn;
     } catch (error: any) {
-      throw new Error(error.message);
+      console.error(error);
+      if(error.name === 'SequelizeForeignKeyConstraintError'){
+        throw new Error("product not found",{cause:"not_found"});
+
+      }
+     else throw new Error(error.message);
     }
   }
 

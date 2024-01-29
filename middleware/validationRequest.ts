@@ -115,13 +115,16 @@ async function validateGetByCategory(
         .typeError("number_of_items must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The number_of_items is required"),
+        .required("The number_of_items is required")
+        .min(1, "The number_of_items must be 1 or above"),
 
       category_id: number()
         .typeError("category_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The category_id is required"),
+        .required("The category_id is required")
+        .min(1, "The category_id must be 1 or above"),
+
     }).noUnknown(true),
   });
 
@@ -153,13 +156,17 @@ async function validateGetByBrand(
         .typeError("number_of_items must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The number_of_items is required"),
+        .required("The number_of_items is required")
+        .min(1, "The number_of_items must be 1 or above"),
+
 
       brand_id: number()
         .typeError("brand_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The brand_id is required"),
+        .required("The brand_id is required")
+        .min(1, "The brand_id must be 1 or above"),
+
     }).noUnknown(true),
   });
 
@@ -171,9 +178,12 @@ async function validateGetByBrand(
   } catch (e: any) {
     return res.status(400).send(e.message);
   }
+
 }
 
-async function validatePageAndItemNumber(
+
+
+async function validatePageAndItemNumberNewArrival(
   req: Request,
   res: Response,
   next: NextFunction
@@ -191,7 +201,42 @@ async function validatePageAndItemNumber(
         .typeError("number_of_items must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The number_of_items is required"),
+        .required("The number_of_items is required")
+        .min(1, "The number_of_items must be 1 or above"),
+    }).noUnknown(true),
+  });
+
+  try {
+    const response = await validateSchema.validate({
+      query: req.query,
+    });
+    next();
+  } catch (e: any) {
+    return res.status(400).send(e.message);
+  }
+}
+
+
+async function validatePageAndItemNumber(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let validateSchema = object({
+    query: object({
+      page_number: number()
+        .typeError("page_number must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The page_number is required")
+        .min(1, "The page_number must be 1 or above"),
+
+      number_of_items: number()
+        .typeError("number_of_items must be a number")
+        .integer(" enter a valid number")
+        .nullable()
+        .required("The number_of_items is required")
+        .min(1, "The number_of_items must be 1 or above"),
     }).noUnknown(true),
   });
 
@@ -254,7 +299,9 @@ async function validateTextSearch(
         .typeError("number_of_items must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The number_of_items is required"),
+        .required("The number_of_items is required")
+        .min(1, "The number_of_items must be 1 or above"),
+
     }).noUnknown(true),
   });
 
@@ -286,7 +333,9 @@ async function validateCategoryBrandID(
         .typeError("brand_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The brand_id is required"),
+        .required("The brand_id is required")
+        .min(1, "The brand_id must be 1 or above"),
+
     }).noUnknown(true),
   });
 
@@ -311,7 +360,8 @@ async function validateProductId(
         .typeError("product_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The product_id is required"),
+        .required("The product_id is required")
+        .min(1, "The product_id must be 1 or above"),
     }).noUnknown(true),
   });
 
@@ -343,7 +393,8 @@ async function validatePopularDiscount(
         .typeError("number_of_items must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The number_of_items is required"),
+        .required("The number_of_items is required")
+        .min(1, "The number_of_items must be 1 or above"),
 
       value: number()
         .round("floor")
@@ -375,7 +426,8 @@ async function validateWishlist(
         .typeError("product_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The product_id is required"),
+        .required("The product_id is required")
+        .min(1, "The product_id must be 1 or above"),
     }).noUnknown(true),
   });
 
@@ -396,7 +448,9 @@ async function validateCart(req: Request, res: Response, next: NextFunction) {
         .typeError("product_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The product_id is required"),
+        .required("The product_id is required")
+        .min(1, "The product_id must be 1 or above"),
+
 
       quantity: number()
         .typeError("quantity must be a number")
@@ -432,7 +486,9 @@ async function validateDeleteFromCart(
         .typeError("product_id must be a number")
         .integer("enter a valid number")
         .nullable()
-        .required("The product_id is required"),
+        .required("The product_id is required")
+        .min(1, "The product_id must be 1 or above"),
+
     }).noUnknown(true),
   });
 
@@ -457,7 +513,9 @@ async function validateDecreaseFromCart(
         .typeError("product_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The product_id is required"),
+        .required("The product_id is required")
+        .min(1, "The product_id must be 1 or above"),
+
 
       quantity: number()
         .typeError("quantity must be a number")
@@ -510,12 +568,12 @@ async function UserEditInfoValidation(
         .nullable(),
 
       phone_number: string()
-        .phone("IN", "phone_number is invalid")
+        .phone("PS", "phone_number is invalid")
         .nullable()
         .typeError("The phone_number should be in string form")
         .matches(
-          /^[(][0-9]{3}[)][-\s\.][0-9]{3}[-\s\.][0-9]{4}$/,
-          "the phone number should be in format (xxx) xxx xxxx"
+          /^[(][0-9]{3}[)][-\s\.][0-9]{2}[-\s\.][0-9]{7}$/,
+          "the phone number should be in format (xxx) xx xxxxxxx"
         ),
 
       date_of_birth: string()
@@ -586,7 +644,7 @@ async function validateOrderStatus(
         .integer(" enter a valid number")
         .nullable()
         .required("The order_status is required")
-        .min(0, "The order_status must not be less than 2")
+        .min(0, "The order_status must not be less than 0")
         .max(2, "The order_status must not be grater than 2"),
     }).noUnknown(true),
   });
@@ -660,7 +718,7 @@ async function validateOrderItem(
         .integer(" enter a valid number")
         .nullable()
         .required("The order_id is required")
-        .min(0, "The order_id must not be grater than 0"),
+        .min(1, "The order_id must not be grater than 1"),
     }).noUnknown(true),
   });
   try {
@@ -704,13 +762,13 @@ async function UserAddressValidation(
         .nullable()
         .required("The new email is required"),
 
-      phone_number: string()
-        .phone("IN", "phone_number is invalid")
+        phone_number: string()
+        .phone("PS", "phone_number is invalid")
         .nullable()
         .typeError("The phone_number should be in string form")
         .matches(
-          /^[(][0-9]{3}[)][-\s\.][0-9]{3}[-\s\.][0-9]{4}$/,
-          "the phone number should be in format (xxx) xxx xxxx"
+          /^[(][0-9]{3}[)][-\s\.][0-9]{2}[-\s\.][0-9]{7}$/,
+          "the phone number should be in format (xxx) xx xxxxxxx"
         )
         .required("The new phone_number is required"),
 
@@ -745,7 +803,9 @@ async function validateAddOrder(
         .typeError("address_id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The address_id is required"),
+        .required("The address_id is required")
+        .min(1, "The address_id must be 1 or above"),
+        
 
       payment_type: string()
         .typeError("payment_type must be a string")
@@ -769,27 +829,31 @@ async function validateAddOrder(
   }
 }
 
-async function validateReview(req: Request, res: Response, next: NextFunction) {
+async function validateAddReview(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   let validateSchema = object({
     body: object({
-      value: number()
-        .typeError("value must be a number")
-        .integer(" enter a valid number")
-        .nullable()
-        .required("The value is required"),
-
       product_id: number()
         .typeError("product_id must be a number")
-        .integer(" enter a valid number")
         .nullable()
         .required("The product_id is required"),
 
-      Comment: string()
-        .typeError("Comment must be a string")
+      comment: string()
+        .typeError("comment must be a string")
         .nullable()
-        .required("The Comment is required"),
+        .required("The comment is required"),
+
+      rating_value: number()
+        .typeError("rating_value must be a number")
+        .nullable()
+        .required("The rating_value is required")
+        .min(0, "The rating_value must not be less than 0")
+        .max(5, "The rating_value must not be grater than 5"),
     })
-      .required("The address_id and payment_type are required")
+      .required("The product_id and comment and rating_value are required")
       .nullable()
       .strict(true)
       .noUnknown(true),
@@ -805,6 +869,7 @@ async function validateReview(req: Request, res: Response, next: NextFunction) {
     return res.status(400).send(e.message);
   }
 }
+
 
 async function validateAddBrandOrCategory(
   req: Request,
@@ -849,50 +914,13 @@ async function validateAddBrandOrCategory(
   }
 }
 
-async function validateAddReview(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  let validateSchema = object({
-    body: object({
-      product_id: number()
-        .typeError("product_id must be a number")
-        .nullable()
-        .required("The product_id is required"),
-
-      comment: string()
-        .typeError("comment must be a string")
-        .nullable()
-        .required("The comment is required"),
-
-      rating_value: number()
-        .typeError("rating_value must be a number")
-        .nullable()
-        .required("The rating_value is required"),
-    })
-      .required("The product_id and comment and rating_value are required")
-      .nullable()
-      .strict(true)
-      .noUnknown(true),
-  });
-
-  try {
-    const response = await validateSchema.validate({
-      query: req.query,
-      body: req.body,
-    });
-    next();
-  } catch (e: any) {
-    return res.status(400).send(e.message);
-  }
-}
 
 export default {
   UserCreateAccountValidation,
   UserLoginValidation,
   validateGetByCategory,
   validateGetByBrand,
+  validatePageAndItemNumberNewArrival,
   validatePageAndItemNumber,
   validatePageNumber,
   validateTextSearch,
