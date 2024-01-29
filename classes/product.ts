@@ -1022,8 +1022,9 @@ export default class CProduct {
       group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
     });
-    return [items_count, items];}
-    else throw new Error("There is no wishlist for this user",{cause:"not_found"});
+    return [items_count, items];
+  }
+    else return [];
   }catch(e:any){
     throw new Error(e.message, { cause: e.cause ? e.cause : "" });
 
