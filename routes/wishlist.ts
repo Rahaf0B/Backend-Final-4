@@ -58,12 +58,12 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
-      const status = await instance.getProductsInWishlist(
+      const [count,items] = await instance.getProductsInWishlist(
         req.uid,
         Number(req.query.page_number),
         Number(req.query.number_of_items)
       );
-      res.status(200).send(status);
+      res.status(200).send({items_count:count,items:items});
     } catch (error: any) {
       if(error.cause=="not_found"){
         res.status(500).send(error.message);
