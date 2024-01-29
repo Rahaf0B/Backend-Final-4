@@ -202,7 +202,7 @@ export default class CUser {
           return true;
         } else {
           throw new Error(
-            "Did not Found Product for the Quantity that you requested",
+            "Did not Found The Product",
             {
               cause: "not found",
             }
