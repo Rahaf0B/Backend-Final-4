@@ -28,7 +28,7 @@ router.post(
       res
         .status(200)
         .cookie("session_token", token, { expires: new Date(expirationDate) })
-        .send(dataInfo);
+        .send({"msg":dataInfo,"session_token":token});
     } catch (e: any) {
       if (e?.cause == "Validation error") {
         res.status(400).send(e.message);
@@ -51,7 +51,7 @@ router.post(
       res
         .status(200)
         .cookie("session_token", token, { expires: new Date(expirationDate),secure:false, httpOnly: true})
-        .send(dataInfo);
+        .send(({"msg":dataInfo,"session_token":token}));
     } catch (e: any) {
       if (e?.cause == "Validation Error") {
         res.status(400).send(e.message);
