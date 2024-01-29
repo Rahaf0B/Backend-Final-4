@@ -171,9 +171,6 @@ router.get(
   validate.validateTextSearch,
   async (req: Request, res: Response) => {
     try {
-      const searchValue = req.query.search_value;
-      const pageNumber = req.query.page_number;
-
       const instance = CProduct.getInstance();
       const [dataInfo, countData] = await instance.search(
         req.query.search_value.toString(),

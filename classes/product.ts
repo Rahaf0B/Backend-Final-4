@@ -383,7 +383,7 @@ export default class CProduct {
               },
             },
             Sequelize.literal(
-              `MATCH (product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
+              `MATCH (Product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
             ),
           ],
         },
@@ -448,7 +448,7 @@ export default class CProduct {
               },
             },
             Sequelize.literal(
-              `MATCH (product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
+              `MATCH (Product.name) AGAINST('${searchString}' IN NATURAL LANGUAGE MODE)`
             ),
           ],
         },
@@ -700,7 +700,6 @@ export default class CProduct {
 
       return Object.values(count[0][0])[0];
     } catch (err: any) {
-      console.log(err);
       throw new Error(err.message);
     }
   }
