@@ -760,7 +760,7 @@ export default class CProduct {
         },
         {
           model: Rating,
-          required: filterType == "rating" ? false : true,
+          required: filterType == "rating" ? true : false,
           attributes: [],
           subQuery: false,
         },
