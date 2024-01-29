@@ -568,8 +568,9 @@ export default class CUser {
           ],
         });
         const commitTrans = await trans.commit();
-        return updatedUserData.toJSON();
+        return updatedUserData;
       } catch (error: any) {
+        console.error(error);
         await trans.rollback();
         if (error.name === "SequelizeUniqueConstraintError") {
           throw new Error("The Email is used", {
