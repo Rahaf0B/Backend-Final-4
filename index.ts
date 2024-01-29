@@ -13,9 +13,9 @@ var cors = require('cors');
 const app = express();
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
-app.use(cors({"Access-Control-Allow-Origin": "*",
+app.use(cors({"Access-Control-Allow-Origin": "http://158.176.1.165:3000",
 credentials: true,
-"Access-Control-Allow-Credentials": true
+"Access-Control-Allow-Credentials": true,
 
 }));
 app.use(express.json());
