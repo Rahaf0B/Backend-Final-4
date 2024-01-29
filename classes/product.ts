@@ -1177,9 +1177,9 @@ export default class CProduct {
     });
     return items;
   }
-  async getorderItems(orderId: number) {
+  async getorderItems(orderId: number,userId:number) {
     const orderInfo = await Order.findAll({
-      where: { order_id: orderId },
+      where: { order_id: orderId ,normal_uid: userId },
       subQuery: false,
       attributes: [
         "total_price",

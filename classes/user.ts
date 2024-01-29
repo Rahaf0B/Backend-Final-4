@@ -201,12 +201,9 @@ export default class CUser {
 
           return true;
         } else {
-          throw new Error(
-            "Did not Found The Product",
-            {
-              cause: "not found",
-            }
-          );
+          throw new Error("Did not Found The Product", {
+            cause: "not found",
+          });
         }
       } catch (e: any) {
         await trans.rollback();
@@ -549,12 +546,8 @@ export default class CUser {
         transaction: trans,
       });
 
-      
       try {
-    await Promise.all([
-          updateUserData,
-          updateNormalUserInfo,
-        ]);
+        await Promise.all([updateUserData, updateNormalUserInfo]);
         const updatedUserData = await Normal_User.findByPk(userId, {
           subQuery: false,
           raw: true,
@@ -967,17 +960,15 @@ export default class CUser {
           [Op.and]: [{ normal_uid: userId }, { product_id: data.product_id }],
         },
       });
-      const dataToReturn=addReview[0].toJSON();
+      const dataToReturn = addReview[0].toJSON();
       delete dataToReturn.normal_uid;
       delete dataToReturn.rating_id;
       return dataToReturn;
     } catch (error: any) {
       console.error(error);
-      if(error.name === 'SequelizeForeignKeyConstraintError'){
-        throw new Error("product not found",{cause:"not_found"});
-
-      }
-     else throw new Error(error.message);
+      if (error.name === "SequelizeForeignKeyConstraintError") {
+        throw new Error("product not found", { cause: "not_found" });
+      } else throw new Error(error.message);
     }
   }
 
@@ -1004,4 +995,16 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
+
+  async getReviews(userId: number) {
+    try {
+      const data = await Rating.findAll({
+        attributes: ["rating_id", "comment", "rating_value"],
+        where: { normal_uid: userId },
+      });
+      return data;
+    } catch (error: any) {}
+  }
+
+
 }

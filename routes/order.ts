@@ -20,7 +20,7 @@ router.get(
   async (req: Request, res: Response) => {
     try {
       const instance = CProduct.getInstance();
-      const data = await instance.getorderItems(Number(req.query.order_id));
+      const data = await instance.getorderItems(Number(req.query.order_id),req.uid);
       res.status(200).send(data);
     } catch (error) {
       res.status(500).end();

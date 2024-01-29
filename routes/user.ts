@@ -185,6 +185,28 @@ router.post(
     }
   }
 );
+
+
+router.get(
+  "/reviews",
+  authorization.authenticateUser,
+  async (req: Request, res: Response) => {
+    try {
+      const instance = CUser.getInstance();
+
+      const dataInfo = await instance.getReviews(req.uid);
+      res.status(200).send(dataInfo);
+    } catch (e: any) {
+      if (e?.cause == "Validation Error") {
+        res.status(400).send(e.message);
+      } else {
+        res.status(500).send();
+      }
+    }
+  }
+);
+
+
 router.post(
   "/logout",
   authorization.authenticateUser,
