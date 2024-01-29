@@ -194,7 +194,7 @@ export default class CProduct {
     const data = Product.findAll({
       subQuery: false,
       offset: pageNumber === 0 ? 0 : (pageNumber - 1) * numberOfItems,
-      limit: pageNumber === 0 ? 4 : numberOfItems,
+      limit: numberOfItems,
       attributes: [
         "product_id",
         "name",
