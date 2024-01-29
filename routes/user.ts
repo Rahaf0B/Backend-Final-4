@@ -50,7 +50,7 @@ router.post(
       );
       res
         .status(200)
-        .cookie("session_token", token, { expires: new Date(expirationDate),sameSite: "none", httpOnly: true, secure: true  })
+        .cookie("session_token", token, { expires: new Date(expirationDate), httpOnly: true})
         .send(dataInfo);
     } catch (e: any) {
       if (e?.cause == "Validation Error") {
