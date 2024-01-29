@@ -944,12 +944,13 @@ export default class CProduct {
     pageNumber: number,
     numberOfItems: number
   ) {
-    const wishlistId = await Wishlist.findOne({
+   try{ const wishlistId = await Wishlist.findOne({
       attributes: ["wishlist_id"],
       where: { normal_uid: userId },
     });
+    if(wishlistId){
     const data = await product_wishlist.findAll({
-      where: { wishlist_id: wishlistId.dataValues.wishlist_id },
+      where: { wishlist_id: wishlistId.wishlist_id },
     });
     const items_count = data.length;
     const product_id_all = data.map((value) => value.dataValues.product_id);
@@ -1021,7 +1022,13 @@ export default class CProduct {
       group: ["product_id", "image_id"],
       order: [["product_id", "DESC"]],
     });
-    return [items_count, items];
+    return [items_count, items];}
+    else throw new Error("There is no wishlist for this user",{cause:"not_found"});
+  }catch(e:any){
+    throw new Error(e.message, { cause: e.cause ? e.cause : "" });
+
+  }
+
   }
   async getAllProducts(
     userId: number,

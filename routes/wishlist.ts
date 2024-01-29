@@ -65,6 +65,10 @@ router.get(
       );
       res.status(200).send(status);
     } catch (error: any) {
+      if(error.cause=="not_found"){
+        res.status(500).send(error.message);
+
+      }else
       res.status(500).end();
     }
   }
