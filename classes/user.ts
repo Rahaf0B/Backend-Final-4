@@ -549,26 +549,26 @@ export default class CUser {
         transaction: trans,
       });
 
-      const updatedUserData = Normal_User.findByPk(userId, {
-        subQuery: false,
-        raw: true,
-        include: { model: User, attributes: [] },
-        attributes: [
-          "user.first_name",
-          "user.last_name",
-          "user.email",
-          "phone_number",
-          "date_of_birth",
-        ],
-      });
+      
       try {
-        const [, , userDataAfterUpdate] = await Promise.all([
+    await Promise.all([
           updateUserData,
           updateNormalUserInfo,
-          updatedUserData,
         ]);
+        const updatedUserData = await Normal_User.findByPk(userId, {
+          subQuery: false,
+          raw: true,
+          include: { model: User, attributes: [] },
+          attributes: [
+            "user.first_name",
+            "user.last_name",
+            "user.email",
+            "phone_number",
+            "date_of_birth",
+          ],
+        });
         const commitTrans = await trans.commit();
-        return userDataAfterUpdate;
+        return updatedUserData.toJSON();
       } catch (error: any) {
         await trans.rollback();
         if (error.name === "SequelizeUniqueConstraintError") {
