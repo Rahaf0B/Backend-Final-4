@@ -62,7 +62,7 @@ router.post(
   }
 );
 
-router.post(
+router.patch(
   "/editInfo",
   authorization.authenticateUser,
   validation.UserEditInfoValidation,
