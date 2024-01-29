@@ -228,7 +228,7 @@ router.get(
 );
 
 //getProductsRatings
-router.get("/ratings/:product_id", async (req: Request, res: Response) => {
+router.get("/ratings/:product_id",validate.validateProductId, async (req: Request, res: Response) => {
   try {
     const productId = Number(req.params.product_id);
     const instance = CProduct.getInstance();

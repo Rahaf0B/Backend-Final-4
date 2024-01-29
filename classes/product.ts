@@ -895,14 +895,14 @@ export default class CProduct {
     try {
       const data = await Rating.findAll({
         attributes: [
-          "value",
+          "rating_value",
           [
-            Sequelize.fn("COUNT", Sequelize.col("rating.rating_value")),
+            Sequelize.fn("COUNT", Sequelize.col("Rating.rating_value")),
             "countRating",
           ],
         ],
         where: { product_id: productId },
-        group: ["value"],
+        group: ["rating_value"],
       });
       return data;
     } catch (e: any) {
@@ -917,7 +917,7 @@ export default class CProduct {
         where: { product_id: productId },
         attributes: [
           "rating_id",
-          "value",
+          "rating_value",
           "comment",
           "date",
           "user.user.first_name",
