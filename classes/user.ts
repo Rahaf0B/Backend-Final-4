@@ -1003,7 +1003,9 @@ export default class CUser {
         where: { normal_uid: userId },
       });
       return data;
-    } catch (error: any) {}
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
   }
 
 
