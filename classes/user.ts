@@ -999,7 +999,7 @@ export default class CUser {
   async getReviews(userId: number) {
     try {
       const data = await Rating.findAll({
-        attributes: ["rating_id", "comment", "rating_value"],
+        attributes: ["product_id","rating_id", "comment", "rating_value"],
         where: { normal_uid: userId },
       });
       return data;
