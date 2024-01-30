@@ -23,7 +23,7 @@ import Product_cart from "../models/Product_cart";
 import CProduct from "./product";
 import Normal_User from "../models/Normal_user";
 import { promises } from "dns";
-import { cloudinaryImageUploadMethod } from "../middleware/imageuploader";
+import { cloudinaryImageDestroyMethod, cloudinaryImageUploadMethod } from "../middleware/imageuploader";
 import Image from "../models/Image";
 import Order from "../models/Order";
 import Address from "../models/Address";
@@ -558,7 +558,6 @@ export default class CUser {
         const commitTrans = await trans.commit();
         return updatedUserData;
       } catch (error: any) {
-        console.error(error);
         await trans.rollback();
         if (error.name === "SequelizeUniqueConstraintError") {
           throw new Error("The Email is used", {
@@ -577,7 +576,6 @@ export default class CUser {
     try {
       const { path } = imageFile[0];
       const url = (await cloudinaryImageUploadMethod(path)) as any;
-
       const image = await Image.findOrCreate({
         where: { normal_uid: userId },
         defaults: {
@@ -594,12 +592,16 @@ export default class CUser {
 
   async deleteUserImage(userId: number): Promise<boolean> {
     try {
+      const userImage=await Image.findOne({where: {normal_uid: userId}});
+      if(userImage){
+await cloudinaryImageDestroyMethod(userImage.url);
       const image = await Image.destroy({
         where: { normal_uid: userId },
       });
       return true;
+    } else throw new Error("No Image Found For This User",{cause:"not found"});
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message,{cause: error.cause ? error.cause: ""});
     }
   }
   async getUserOrders(userId: number, orderStatus: number) {
@@ -811,9 +813,11 @@ export default class CUser {
     }
   }
 
-  async getSingleAddressInfo(addressId: number) {
+  async getSingleAddressInfo(addressId: number,userId:number) {
     try {
-      const addressInfo = await Address.findByPk(addressId, {
+      const addressInfo = await Address.findOne( {
+        where:{address_id:addressId, normal_uid:userId},
+
         attributes: [
           "first_name",
           "last_name",
@@ -839,7 +843,7 @@ export default class CUser {
     trans: any
   ): Promise<IOrder> {
     try {
-      const addressInfo = await this.getSingleAddressInfo(addressId);
+      const addressInfo = await this.getSingleAddressInfo(addressId,userId);
       const dataOrder = {
         normal_uid: userId,
         address_id: addressId,
@@ -959,7 +963,6 @@ export default class CUser {
       delete dataToReturn.rating_id;
       return dataToReturn;
     } catch (error: any) {
-      console.error(error);
       if (error.name === "SequelizeForeignKeyConstraintError") {
         throw new Error("product not found", { cause: "not_found" });
       } else throw new Error(error.message);

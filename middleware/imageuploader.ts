@@ -39,10 +39,26 @@ export const cloudinaryImageUploadMethod = async (file: any) => {
             fileSize: 1024 * 1024 * 5,
           },
           allowedFormats: ["jpg"],
-
+          type: 'authenticated',
           res: res.secure_url,
         });
       });
     });
   });
+};
+
+
+
+export const cloudinaryImageDestroyMethod = async (file: any) => {
+  return new Promise((resolve) => {
+     
+     return cloudinary.api.delete_resources([file],{  type: 'upload', resource_type: 'image' }, (_err: any, res: any) =>{
+        resolve({
+         
+        });
+        
+      });
+
+    });
+ 
 };

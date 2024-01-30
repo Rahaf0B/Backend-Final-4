@@ -104,6 +104,10 @@ router.delete(
       const urlImage = await instance.deleteUserImage(req.uid);
       res.status(200).send(urlImage);
     } catch (err: any) {
+      if (err.cause==="not found"){
+        res.status(500).send(err.message);
+
+      }else
       res.status(500).end();
     }
   }
