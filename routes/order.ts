@@ -83,8 +83,7 @@ router.post(
       ) {
         res.status(400).send(error.message);
       }
-
-      res.status(500).end();
+else res.status(500).end();
     }
   }
 );

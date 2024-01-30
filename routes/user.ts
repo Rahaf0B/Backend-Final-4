@@ -105,7 +105,7 @@ router.delete(
       res.status(200).send(urlImage);
     } catch (err: any) {
       if (err.cause==="not found"){
-        res.status(500).send(err.message);
+        res.status(400).send(err.message);
 
       }else
       res.status(500).end();
@@ -185,7 +185,7 @@ router.post(
         res.status(400).send(e.message);
 
       }
-      res.status(500).send();
+      else res.status(500).send();
     }
   }
 );
