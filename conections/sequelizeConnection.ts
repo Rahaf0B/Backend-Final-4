@@ -30,12 +30,12 @@ const sequelize = new Sequelize({
   dialect: "mysql",
 });
 
-sequelize.addModels([Address,Admin,Brand,Cart,Category,Discount,Image,Normal_User,Order_item,Order,Product_cart,Product_discount,Product_wishlist,Product,Rating,Session,User,Wishlist]);
+sequelize.addModels([Rating,Address,Admin,Brand,Cart,Category,Discount,Image,Normal_User,Order_item,Order,Product_cart,Product_discount,Product_wishlist,Product,Session,User,Wishlist]);
 sequelize
   .authenticate()
   .then(() => {
     console.log("Connection has been established successfully.");
-    sequelize.sync();//{ alter: true , force: false }
+    sequelize.sync({alter:true});//{ alter: true , force: false }
   })
   .catch((error) => {
     console.error("Unable to connect to the database:", error);

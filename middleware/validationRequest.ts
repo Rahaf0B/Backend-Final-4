@@ -744,6 +744,7 @@ async function UserAddressValidation(
         .strict(true)
         .typeError("location must be a string formate")
         .nullable()
+        .max(50,"The location must be at most 50 characters")
         .required("The new location is required"),
     })
       .required("To edit You Should enter valid Info")
@@ -778,6 +779,7 @@ async function validateAddOrder(
       payment_type: string()
         .typeError("payment_type must be a string")
         .nullable()
+        .max(30,"The payment_type must be at most 50 characters")
         .required("The payment_type is required"),
     })
       .required("The address_id and payment_type are required")

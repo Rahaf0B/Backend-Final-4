@@ -67,7 +67,7 @@ class Rating extends Model<IRating> implements IRating {
 
   @AllowNull(false)
   @Column({
-    type: DataType.STRING,
+    type: DataType.TEXT,
   })
   declare comment?: string;
 
