@@ -233,7 +233,7 @@ export default class CUser {
           lock: true,
           skipLocked: true,
         });
-        try {
+        if (wishlist) {
           const wishlistDeletedProduct = await Product_wishlist.destroy({
             transaction: trans,
             where: {
@@ -243,24 +243,21 @@ export default class CUser {
             },
           });
 
-          try {
-            const commitTrans = await trans.commit();
+          const commitTrans = await trans.commit();
 
-            return true;
-          } catch (error: any) {
-            await trans.rollback();
-            throw new Error(error.message);
-          }
-        } catch (error: any) {
-          await trans.rollback();
-          throw new Error(error.message);
-        }
+          return true;
+        } else
+          throw new Error("There is no wishlist for this user", {
+            cause: "not found",
+          });
       } catch (error: any) {
         await trans.rollback();
-        throw new Error(error.message);
+        throw new Error(error.message, {
+          cause: error.cause ? error.cause : "",
+        });
       }
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -443,10 +440,10 @@ export default class CUser {
       } catch (error: any) {
         await trans.rollback();
 
-        throw new Error(error.message);
+        throw new Error(error.message, { cause: error.cause ? error.cause : "" });
       }
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -471,10 +468,10 @@ export default class CUser {
       } catch (error: any) {
         await trans.rollback();
 
-        throw new Error(error.message);
+        throw new Error(error.message, { cause: error.cause ? error.cause : "" });
       }
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -492,10 +489,9 @@ export default class CUser {
           transaction: trans,
           lock: true,
         });
+        if (cart) {
+          const cartInfo = cart.toJSON();
 
-        const cartInfo = cart.toJSON();
-
-        try {
           if (optionType === "delete") {
             await this.deleteFromCart(productId, cartInfo.cart_id, trans);
           } else if (optionType === "decrease") {
@@ -508,14 +504,12 @@ export default class CUser {
           }
 
           return true;
-        } catch (error: any) {
-          throw new Error(error.message);
-        }
+        } else throw new Error("There is no cart for this user",{cause:"not found"})
       } catch (error: any) {
-        throw new Error(error.message);
+        throw new Error(error.message, { cause: error.cause ? error.cause : "" });
       }
     } catch (error: any) {
-      throw new Error(error.message);
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
 
@@ -999,7 +993,7 @@ export default class CUser {
   async getReviews(userId: number) {
     try {
       const data = await Rating.findAll({
-        attributes: ["product_id","rating_id", "comment", "rating_value"],
+        attributes: ["product_id", "rating_id", "comment", "rating_value"],
         where: { normal_uid: userId },
       });
       return data;
@@ -1007,6 +1001,4 @@ export default class CUser {
       throw new Error(error.message);
     }
   }
-
-
 }

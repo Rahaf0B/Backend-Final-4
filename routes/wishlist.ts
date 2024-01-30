@@ -45,6 +45,9 @@ router.delete(
       );
       res.status(200).send(status);
     } catch (error: any) {
+      if(error.cause=="not found"){
+res.status(400).send(error.message);
+      }else
       res.status(500).end();
     }
   }
