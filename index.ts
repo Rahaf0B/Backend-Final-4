@@ -7,7 +7,6 @@ import orderRoutes from './routes/order';
 import authRoutes from './routes/user';
 import './conections/sequelizeConnection'
 import './middleware/imageuploader';
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 var cors = require('cors');
 
