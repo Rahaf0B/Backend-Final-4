@@ -30,6 +30,8 @@ app.use('/cart',cartRoutes);
 app.use('/wishlist',wishListRoutes);
 app.use('/order',orderRoutes);
 app.use('/auth',authRoutes);
+app.use('/category',brandRoutes);
+
 
 app.use(express.static(__dirname + '/public'));
 app.use('/images/product', express.static('images/product'));
