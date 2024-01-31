@@ -34,6 +34,7 @@ app.use('/auth',authRoutes);
 app.use('/category',categoryRoutes);
 
 
+
 app.use(express.static(__dirname + '/public'));
 app.use('/images/product', express.static('images/product'));
 app.use('/images/brand', express.static('images/brand'));
