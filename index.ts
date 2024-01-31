@@ -25,7 +25,6 @@ app.use(express.urlencoded({ extended: true }));
 
 const port = 3000;
 
-app.use('/api', createProxyMiddleware({ target: 'http://158.176.1.165:3000', changeOrigin: true }));
 app.use('/product',productRoutes);
 app.use('/brand',brandRoutes);
 app.use('/cart',cartRoutes);

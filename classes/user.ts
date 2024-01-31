@@ -847,7 +847,7 @@ await cloudinaryImageDestroyMethod(userImage.url);
       const dataOrder = {
         normal_uid: userId,
         address_id: addressId,
-        payment_status: true,
+        payment_status: paymentType=="cache" ? false : true,
         payment_type: paymentType,
         total_price: TotalPrice,
         status: 1,

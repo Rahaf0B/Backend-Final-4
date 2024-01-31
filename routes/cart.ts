@@ -51,7 +51,7 @@ router.post(
 
 //increase product quantity in Cart
 router.patch(
-  "/increase_quantity",
+  "/increase-quantity",
   authorization.authenticateUser,
   validate.validateCart,
   async (req: Request, res: Response) => {
@@ -73,7 +73,7 @@ router.patch(
 
 //decrease product quantity from Cart
 router.patch(
-  "/decrease_quantity",
+  "/decrease-quantity",
   authorization.authenticateUser,
   validate.validateCart,
   async (req: Request, res: Response) => {
