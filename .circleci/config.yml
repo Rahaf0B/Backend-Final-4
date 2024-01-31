@@ -39,7 +39,8 @@ workflows:
     when:
       equal: [ main , << pipeline.git.branch >> ]
     jobs:
-      - build
+      - build:
+          ref: << pipeline.git.branch >><<^ pipeline.git.branch >>main<</ pipeline.git.branch >>
       - deploy:
           requires:
             - build
