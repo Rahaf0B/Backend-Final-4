@@ -5,6 +5,7 @@ import cartRoutes from './routes/cart';
 import wishListRoutes from './routes/wishlist';
 import orderRoutes from './routes/order';
 import authRoutes from './routes/user';
+import categoryRoutes from './routes/category';
 import './conections/sequelizeConnection'
 import './middleware/imageuploader';
 
@@ -30,7 +31,7 @@ app.use('/cart',cartRoutes);
 app.use('/wishlist',wishListRoutes);
 app.use('/order',orderRoutes);
 app.use('/auth',authRoutes);
-app.use('/category',brandRoutes);
+app.use('/category',categoryRoutes);
 
 
 app.use(express.static(__dirname + '/public'));
