@@ -46,7 +46,7 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items),
         req.uid,
-        Number(req.query.category_id),
+        Number(req.query.id),
         ...[,]
       );
 
@@ -70,7 +70,7 @@ router.get(
         Number(req.query.number_of_items),
         req.uid,
         ...[,],
-        Number(req.query.brand_id)
+        Number(req.query.id)
       );
 
       res.status(200).send({ items_count: countData, items: dataInfo });
@@ -112,7 +112,7 @@ router.get(
         Number(req.query.page_number),
         Number(req.query.number_of_items),
         req.uid,
-        Number(req.query.category_id)
+        Number(req.query.id)
       );
 
       res.status(200).send({ items_count: countData, items: dataInfo });

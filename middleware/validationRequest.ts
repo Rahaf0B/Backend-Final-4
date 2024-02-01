@@ -118,12 +118,12 @@ async function validateGetByCategory(
         .required("The number_of_items is required")
         .min(1, "The number_of_items must be 1 or above"),
 
-      category_id: number()
-        .typeError("category_id must be a number")
+      id: number()
+        .typeError("category id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The category_id is required")
-        .min(1, "The category_id must be 1 or above"),
+        .required("The category id is required")
+        .min(1, "The category id must be 1 or above"),
 
     }).noUnknown(true),
   });
@@ -160,11 +160,11 @@ async function validateGetByBrand(
         .min(1, "The number_of_items must be 1 or above"),
 
 
-      brand_id: number()
-        .typeError("brand_id must be a number")
+      id: number()
+        .typeError("brand id must be a number")
         .integer(" enter a valid number")
         .nullable()
-        .required("The brand_id is required")
+        .required("The brand id is required")
         .min(1, "The brand_id must be 1 or above"),
 
     }).noUnknown(true),
