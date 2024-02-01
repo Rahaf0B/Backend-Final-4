@@ -27,7 +27,7 @@ router.post(
         await instance?.createUserAccount(req.body);
       res
         .status(200)
-        .cookie("session_token", token, { expires: new Date(expirationDate) })
+        .setHeader("Authorization", token)
         .send({"msg":dataInfo,"session_token":token});
     } catch (e: any) {
       if (e?.cause == "Validation error") {
@@ -50,7 +50,7 @@ router.post(
       );
       res
         .status(200)
-        .cookie("session_token", token, { expires: new Date(expirationDate)})
+        .setHeader("Authorization", token)
         .send(({"msg":dataInfo,"session_token":token}));
     } catch (e: any) {
       if (e?.cause == "Validation Error") {

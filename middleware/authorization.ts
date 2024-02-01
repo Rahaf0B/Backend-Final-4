@@ -7,6 +7,9 @@ async function checkExistSession(
   next: NextFunction
 ) {
   let token = req.headers.authorization as string;
+
+  
+
   if (!token) {
     token=token?.split(" ")[1];
 
