@@ -23,7 +23,10 @@ import Product_cart from "../models/Product_cart";
 import CProduct from "./product";
 import Normal_User from "../models/Normal_user";
 import { promises } from "dns";
-import { cloudinaryImageDestroyMethod, cloudinaryImageUploadMethod } from "../middleware/imageuploader";
+import {
+  cloudinaryImageDestroyMethod,
+  cloudinaryImageUploadMethod,
+} from "../middleware/imageuploader";
 import Image from "../models/Image";
 import Order from "../models/Order";
 import Address from "../models/Address";
@@ -411,8 +414,17 @@ export default class CUser {
         where: {
           product_id: productId,
           cart_id: cartId,
-          quantity: { [Op.gte]: quantity },
+          quantity: { [Op.gt]: quantity },
         },
+        transaction: trans,
+      });
+      const cartDeleteProduct = await Product_cart.destroy({
+        where: {
+          cart_id: cartId,
+          product_id: productId,
+          quantity: { [Op.eq]: quantity },
+        },
+
         transaction: trans,
       });
     } catch (error: any) {
@@ -440,7 +452,9 @@ export default class CUser {
       } catch (error: any) {
         await trans.rollback();
 
-        throw new Error(error.message, { cause: error.cause ? error.cause : "" });
+        throw new Error(error.message, {
+          cause: error.cause ? error.cause : "",
+        });
       }
     } catch (error: any) {
       throw new Error(error.message, { cause: error.cause ? error.cause : "" });
@@ -468,7 +482,9 @@ export default class CUser {
       } catch (error: any) {
         await trans.rollback();
 
-        throw new Error(error.message, { cause: error.cause ? error.cause : "" });
+        throw new Error(error.message, {
+          cause: error.cause ? error.cause : "",
+        });
       }
     } catch (error: any) {
       throw new Error(error.message, { cause: error.cause ? error.cause : "" });
@@ -504,9 +520,14 @@ export default class CUser {
           }
 
           return true;
-        } else throw new Error("There is no cart for this user",{cause:"not found"})
+        } else
+          throw new Error("There is no cart for this user", {
+            cause: "not found",
+          });
       } catch (error: any) {
-        throw new Error(error.message, { cause: error.cause ? error.cause : "" });
+        throw new Error(error.message, {
+          cause: error.cause ? error.cause : "",
+        });
       }
     } catch (error: any) {
       throw new Error(error.message, { cause: error.cause ? error.cause : "" });
@@ -592,16 +613,17 @@ export default class CUser {
 
   async deleteUserImage(userId: number): Promise<boolean> {
     try {
-      const userImage=await Image.findOne({where: {normal_uid: userId}});
-      if(userImage){
-await cloudinaryImageDestroyMethod(userImage.url);
-      const image = await Image.destroy({
-        where: { normal_uid: userId },
-      });
-      return true;
-    } else throw new Error("No Image Found For This User",{cause:"not found"});
+      const userImage = await Image.findOne({ where: { normal_uid: userId } });
+      if (userImage) {
+        await cloudinaryImageDestroyMethod(userImage.url);
+        const image = await Image.destroy({
+          where: { normal_uid: userId },
+        });
+        return true;
+      } else
+        throw new Error("No Image Found For This User", { cause: "not found" });
     } catch (error: any) {
-      throw new Error(error.message,{cause: error.cause ? error.cause: ""});
+      throw new Error(error.message, { cause: error.cause ? error.cause : "" });
     }
   }
   async getUserOrders(userId: number, orderStatus: number) {
@@ -813,10 +835,10 @@ await cloudinaryImageDestroyMethod(userImage.url);
     }
   }
 
-  async getSingleAddressInfo(addressId: number,userId:number) {
+  async getSingleAddressInfo(addressId: number, userId: number) {
     try {
-      const addressInfo = await Address.findOne( {
-        where:{address_id:addressId, normal_uid:userId},
+      const addressInfo = await Address.findOne({
+        where: { address_id: addressId, normal_uid: userId },
 
         attributes: [
           "first_name",
@@ -843,11 +865,11 @@ await cloudinaryImageDestroyMethod(userImage.url);
     trans: any
   ): Promise<IOrder> {
     try {
-      const addressInfo = await this.getSingleAddressInfo(addressId,userId);
+      const addressInfo = await this.getSingleAddressInfo(addressId, userId);
       const dataOrder = {
         normal_uid: userId,
         address_id: addressId,
-        payment_status: paymentType=="cache" ? false : true,
+        payment_status: paymentType == "cache" ? false : true,
         payment_type: paymentType,
         total_price: TotalPrice,
         status: 1,
