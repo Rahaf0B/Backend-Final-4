@@ -6,7 +6,8 @@ async function checkExistSession(
   res: Response,
   next: NextFunction
 ) {
-  const token = req.cookies["session_token"];
+  let token = req.headers.authorization as string;
+  token=token.split(" ")[1];
   if (!token) {
     req.uid = 0;
     next();
@@ -25,7 +26,8 @@ async function authenticateUser(
   res: Response,
   next: NextFunction
 ) {
-  const token = req.cookies["session_token"];
+  let token = req.headers.authorization as string;
+token=token.split(" ")[1];
 
   if (!token) {
     return res.status(401).send("The session token is required");
