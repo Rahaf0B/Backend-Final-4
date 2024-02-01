@@ -8,14 +8,15 @@ async function checkExistSession(
 ) {
   let token = req.headers.authorization as string;
 
-  
+
 
   if (!token) {
-    token=token?.split(" ")[1];
 
     req.uid = 0;
     next();
   } else {
+    
+    token=token?.split(" ")[1];
     try {
       const returnreq=await authenticateUser(req, res, next);
       return returnreq;
@@ -33,10 +34,11 @@ async function authenticateUser(
   let token = req.headers.authorization as string;
 
   if (!token) {
-    token=token?.split(" ")[1];
 
     return res.status(401).send("The session token is required");
   } else {
+    token=token?.split(" ")[1];
+
     const instance = CUser.getInstance();
 
     try {
