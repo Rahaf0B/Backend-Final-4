@@ -7,8 +7,9 @@ async function checkExistSession(
   next: NextFunction
 ) {
   let token = req.headers.authorization as string;
-  token=token.split(" ")[1];
   if (!token) {
+    token=token?.split(" ")[1];
+
     req.uid = 0;
     next();
   } else {
@@ -27,9 +28,10 @@ async function authenticateUser(
   next: NextFunction
 ) {
   let token = req.headers.authorization as string;
-token=token.split(" ")[1];
 
   if (!token) {
+    token=token?.split(" ")[1];
+
     return res.status(401).send("The session token is required");
   } else {
     const instance = CUser.getInstance();
